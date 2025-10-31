@@ -881,7 +881,7 @@ Tip
 <span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="co"># I think we can delete this. But still checking and runing code - AWM 7/16/2025</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="co"># I think we can delete this. But still checking and running code - AWM 7/16/2025</span></span>
 <span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Agency == 799 for Statutory transfers </span></span>
 <span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="co">#  Object == 1993 is for Interfund cash transfers  </span></span>
 <span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a> exp_temp <span class="ot">&lt;-</span> exp_temp <span class="sc">%&gt;%</span> </span>
@@ -899,7 +899,7 @@ Tip
 </details>
 </div>
 <ul>
-<li>the initial combined and years of data are saved as dataframes named <code>exp_allyears</code> and <code>rev_allyears</code>. These are then saved as exp_temp and rev_temp while recoding variables. This is BEFORE creating Fiscal Future category groups and further data cleaning done in the Calculating the Fiscal Gap page.</li>
+<li>the initial combined years of data are saved as dataframes named <code>exp_allyears</code> and <code>rev_allyears</code>. These are then saved as exp_temp and rev_temp while recoding variables. This is BEFORE creating Fiscal Future category groups and further data cleaning done in the Calculating the Fiscal Gap page.</li>
 </ul>
 <p>Update Agencies: Some agencies have merged with others or changed names over time.</p>
 <p><strong>[[ TO DO: Add appendix item of Current agencies (with indented past agencies) from the Methodology Document. ]]</strong></p>
@@ -1579,7 +1579,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb17-113"><a href="#cb17-113" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-114"><a href="#cb17-114" aria-hidden="true" tabindex="-1"></a><span class="co">For FY 2023 and after, .dta files can be avoided entirely and .csv or excel files will be used. All files before this year had been saved and passed on as .dta files for Stata code before the transition to R in Fall 2022.---&gt;</span></span>
 <span id="cb17-115"><a href="#cb17-115" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-116"><a href="#cb17-116" aria-hidden="true" tabindex="-1"></a><span class="in">```{r create-rev-csv-dtafiles, include=FALSE, eval=FALSE}</span></span>
+<span id="cb17-116"><a href="#cb17-116" aria-hidden="true" tabindex="-1"></a><span class="in">```{r historic-create-rev-csv-dtafiles, include=FALSE, eval=FALSE}</span></span>
 <span id="cb17-117"><a href="#cb17-117" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-118"><a href="#cb17-118" aria-hidden="true" tabindex="-1"></a><span class="in"># original way of combing dta files. </span></span>
 <span id="cb17-119"><a href="#cb17-119" aria-hidden="true" tabindex="-1"></a><span class="in"># now each year just takes the previous years combined file and row binds the newest data to it instead of recreating it</span></span>
@@ -1996,7 +1996,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb17-536"><a href="#cb17-536" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-537"><a href="#cb17-537" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-538"><a href="#cb17-538" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-539"><a href="#cb17-539" aria-hidden="true" tabindex="-1"></a><span class="in"># I think we can delete this. But still checking and runing code - AWM 7/16/2025</span></span>
+<span id="cb17-539"><a href="#cb17-539" aria-hidden="true" tabindex="-1"></a><span class="in"># I think we can delete this. But still checking and running code - AWM 7/16/2025</span></span>
 <span id="cb17-540"><a href="#cb17-540" aria-hidden="true" tabindex="-1"></a><span class="in"># Agency == 799 for Statutory transfers </span></span>
 <span id="cb17-541"><a href="#cb17-541" aria-hidden="true" tabindex="-1"></a><span class="in">#  Object == 1993 is for Interfund cash transfers  </span></span>
 <span id="cb17-542"><a href="#cb17-542" aria-hidden="true" tabindex="-1"></a><span class="in"> exp_temp &lt;- exp_temp %&gt;% </span></span>
@@ -2014,7 +2014,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb17-554"><a href="#cb17-554" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-555"><a href="#cb17-555" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb17-556"><a href="#cb17-556" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-557"><a href="#cb17-557" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>the initial combined and years of data are saved as dataframes named <span class="in">`exp_allyears`</span> and <span class="in">`rev_allyears`</span>. These are then saved as exp_temp and rev_temp while recoding variables. This is BEFORE creating Fiscal Future category groups and further data cleaning done in the Calculating the Fiscal Gap page.</span>
+<span id="cb17-557"><a href="#cb17-557" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>the initial combined years of data are saved as dataframes named <span class="in">`exp_allyears`</span> and <span class="in">`rev_allyears`</span>. These are then saved as exp_temp and rev_temp while recoding variables. This is BEFORE creating Fiscal Future category groups and further data cleaning done in the Calculating the Fiscal Gap page.</span>
 <span id="cb17-558"><a href="#cb17-558" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-559"><a href="#cb17-559" aria-hidden="true" tabindex="-1"></a><span class="in">```{r remove-all_obs_df, include=FALSE}</span></span>
 <span id="cb17-560"><a href="#cb17-560" aria-hidden="true" tabindex="-1"></a><span class="in">rm(allexpfiles)</span></span>
