@@ -109,7 +109,7 @@ exp_current <- read_xlsx("inputs/ioc_data_received/expenditures/Fis_Fut_Exp_2025
 
 For FY 2023 and after, .dta files can be avoided entirely and .csv or excel files will be used. All files before this year had been saved and passed on as .dta files for Stata code before the transition to R in Fall 2022.--->
 
-```{r create-rev-csv-dtafiles, include=FALSE, eval=FALSE}
+```{r historic-create-rev-csv-dtafiles, include=FALSE, eval=FALSE}
 
 # original way of combing dta files. 
 # now each year just takes the previous years combined file and row binds the newest data to it instead of recreating it
@@ -526,7 +526,7 @@ exp_temp <- exp_allyears %>%
 
 
 
-# I think we can delete this. But still checking and runing code - AWM 7/16/2025
+# I think we can delete this. But still checking and running code - AWM 7/16/2025
 # Agency == 799 for Statutory transfers 
 #  Object == 1993 is for Interfund cash transfers  
  exp_temp <- exp_temp %>% 
@@ -544,7 +544,7 @@ exp_temp <- exp_allyears %>%
 
 ```
 
--   the initial combined and years of data are saved as dataframes named `exp_allyears` and `rev_allyears`. These are then saved as exp_temp and rev_temp while recoding variables. This is BEFORE creating Fiscal Future category groups and further data cleaning done in the Calculating the Fiscal Gap page.
+-   the initial combined years of data are saved as dataframes named `exp_allyears` and `rev_allyears`. These are then saved as exp_temp and rev_temp while recoding variables. This is BEFORE creating Fiscal Future category groups and further data cleaning done in the Calculating the Fiscal Gap page.
 
 ```{r remove-all_obs_df, include=FALSE}
 rm(allexpfiles)
