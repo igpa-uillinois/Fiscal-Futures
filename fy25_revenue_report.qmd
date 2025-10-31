@@ -2,14 +2,14 @@
 title: "FY 2025 Revenue Report"
 ---
 
-# Report Tables and Figures
+## Report Tables and Figures
 
-## Figure 1
+### Figure 1
 
 ![](./data/FY2025 Files/generated/FIGURE1.png){width=100%}
 
 
-## Table 1
+### Table 1
 
 ```{r}
 #| echo: false
@@ -21,14 +21,14 @@ cat(readr::read_file("../Fiscal Futures FY2025/generated/TABLE1.html"))
 ```
 
 
-## Figure 2 
+### Figure 2 
 
 ![](./data/FY2025 Files/generated/figure2.png)
 
 
-## Figure 3
+### Figure 3
 
-### Logic & Background (from “logicmodel” sheet in obbb_v6.xlsx)
+#### Logic & Background (from “logicmodel” sheet in obbb_v6.xlsx)
 
 **Goal.** Back-of-the-envelope estimate of **OBBB’s impact on Illinois’ ability to levy and collect provider taxes**. Dollar amounts below are **millions, nominal**.
 
@@ -46,6 +46,7 @@ cat(readr::read_file("../Fiscal Futures FY2025/generated/TABLE1.html"))
   - Source: Burns, Hinton, Williams, Rudowitz, “**5 Key Facts About Medicaid and Provider Taxes**,” KFF, Mar 26, 2025. <https://www.kff.org/medicaid/issue-brief/5-key-facts-about-medicaid-and-provider-taxes/>
 
 #### Timing & growth
+
 - First 0.5 pp reduction required **Oct 1, 2028** → hits **SFY 2029** for **9 of 12 months (75%)**.  
 - **Annual growth in base:** 1.0% (conservative; enrollment/utilization likely softening).
 
@@ -53,11 +54,11 @@ cat(readr::read_file("../Fiscal Futures FY2025/generated/TABLE1.html"))
 ![](./data/FY2025 Files/generated/figure3.png)
 
 
-## Figure 4
+### Figure 4
 
 ![](./data/FY2025 Files/generated/figure4.png)
 
-## Appendix Item 1
+### Appendix Item 1
 
 ```{r}
 #| echo: false
