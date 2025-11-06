@@ -1,0 +1,363 @@
+---
+title: "Adjusted Values"
+format:
+  html:
+    code-fold: TRUE
+    toc: true
+    toc-location: left
+---
+
+Index data pulled by David Merriman using Stata and FRED.
+
+ * Gross Domestic Product: All Industry Total in Illinois (ILNGSP)
+ * Consumer Price Index for All Urban Consumers: All Items in U.S. City Average (CPIAUCSL)
+ * Producer Price Index by Commodity: Final Demand: Government Purchases, Nondefense (WPSFD49406)
+ * Resident Population in Illinois (ILPOP)
+ 
+
+```{r message = FALSE, warning = FALSE}
+library(tidyverse)
+library(cmapplot) # for recession line function
+
+# values are in millions of dollars
+totals <- readxl::read_xlsx("data/FY2025 Files/summary_file_FY25_PensionChange_2025_07_016.xlsx", sheet = "aggregated_totals_long")
+
+# index data from FRED, pulled by DFM
+adjustments <- readxl::read_xlsx("inputs/raw_index_data.xlsx")
+
+totals2 <- totals |> left_join(adjustments, by = c("Year" = "year")) |>
+  mutate(type = ifelse(type == "rev", "Revenue", "Expenditures"))
+
+current_year = 2025
+
+alea_theme <- function() {
+  font <-"Whitney"
+  
+  ggplot2::theme(
+    legend.position = "right",
+    legend.title = element_blank(),
+    
+    panel.background = ggplot2::element_blank(),
+    panel.grid.minor.x = ggplot2::element_blank(),
+    panel.grid.major.y = element_line(color = "grey"),
+    panel.grid.minor.y = element_line(color = "grey", 
+                                      linetype = "dashed"),
+    # panel.grid.major.x = ggplot2::element_blank(),
+    axis.ticks = element_line(color = "gray"),
+    axis.ticks.x = element_blank()
+  )
+  
+}
+
+theme_set(alea_theme())
+
+# Custom billion format
+label_billions <- function(digits = 1) {
+  function(x) {
+    number_format(accuracy = 10^-digits, suffix = "B")(
+      x / 1e9
+    )
+  }
+}
+
+scale_y_billions <- function(..., digits = 1) {
+  scale_y_continuous(labels = label_billions(digits), ...)
+}
+
+
+update_recessions <- function(url = NULL, quietly = FALSE){
+
+  # Use default URL if user does not override
+  if (is_null(url) | missing(url)) {
+    url <- "https://data.nber.org/data/cycles/business_cycle_dates.json"
+  }
+  
+   # locally bind variable names
+  start_char <- end_char <- start_date <- end_date <- ongoing <- index <- peak <- trough <- NULL
+
+  return(
+    # attempt to download and format recessions table
+    tryCatch({
+      recessions <- jsonlite::fromJSON(url) %>%
+        # drop first row trough
+        dplyr::slice(-1) %>%
+        # convert peaks and troughs...
+        dplyr::mutate(
+          # ...to R dates
+          start_date = as.Date(peak),
+          end_date = as.Date(trough),
+          # ... and clean char strings
+          start_char = format(start_date, "%b %Y"),
+          end_char = format(end_date, "%b %Y")) %>%
+        # confirm ascending and create row number
+        dplyr::arrange(start_date) %>%
+        mutate(index = row_number()) %>%
+        mutate(
+          # Flag unfinished recessions
+          ongoing = case_when(
+            is.na(end_date) & index == max(.$index) ~ T,
+            TRUE ~ F),
+          # set ongoing recession to arbitrary future date
+          end_date = case_when(
+            ongoing ~ as.Date("2200-01-01"),
+            TRUE ~ end_date),
+          # mark ongoing recession in char field
+          end_char = case_when(
+            ongoing ~ "Ongoing",
+            TRUE ~ end_char)
+          ) %>%
+        # clean up
+        select(start_char, end_char, start_date, end_date, ongoing)
+
+      if (!quietly) {message("Successfully fetched from NBER")}
+
+      # Return recessions
+      recessions
+    },
+    error = function(cond){
+      if (!quietly) message("WARNING: Fetch or processing failed. `NULL` returned.")
+      return(NULL)
+    }
+    )
+  )
+}
+
+#recess_table <- list(build_recessions(update))
+recessions <- update_recessions()
+
+```
+
+# Inflated Values
+
+Inflating makes old numbers “current” by pushing them up to today’s price level.
+
+
+```{r warning = FALSE, message = FALSE}
+#| layout-ncol: 2
+
+ylabels <- c("Billions of Dollars",
+             #"Billions of Dollars",
+             "Billions of Dollars"
+             )
+
+vars <-  c("CPIAUCSL", "ILNGSP"#, "WPSFD49406"
+           )
+
+titles <- c("Adjusted by Inflation (CPIAUCSL)",
+            "Adjusted by Illinois GDP (ILNGSP)"#,
+         #   "Adjusted by Producer Price Index by Commodity (WPSFD4906)"
+            )
+
+for (i in seq_along(vars)) {
+  
+  var   <- vars[i]
+  title <- titles[i]
+    ylabel  <- ylabels[i]
+
+    
+    graph <- totals2 |> 
+      mutate(
+        base2024 = .data[[var]] / .data[[var]][Year == 2024],
+        base1998 = .data[[var]] / .data[[var]][Year == 1998]
+      )  |>
+      
+      mutate(adj_dollars = Dollars/1000 / base2024) |>  
+      group_by(Year, type) |>
+    summarize(adj_dollars = sum(adj_dollars, na.rm = TRUE), .groups = "drop") |>
+    ggplot() + 
+      geom_recessions(text = FALSE, update = recessions)+
+
+      geom_line(aes(x = Year, y = adj_dollars, group = type, color = type), lwd = 1) +
+      theme_minimal() +
+    scale_y_continuous(labels=scales::dollar)+
+      scale_color_manual(values = c("Revenue" = "black", "Expenditures" = "red")) + 
+
+      scale_x_continuous(
+        expand = c(0,0), 
+        limits = c(1998, 2024), 
+        breaks = c(1998, 2005, 2010, 2015, 2020, current_year-1)
+      ) + 
+      labs(
+        title = title,
+        y = ylabel,
+        x = NULL
+      ) + 
+      theme(legend.title = element_blank()) 
+  
+  print(graph)
+}
+
+
+```
+
+## Inflated Values per Person
+
+```{r warning = FALSE, message = FALSE}
+#| layout-ncol: 2
+
+ylabels <- c("Dollars/Person",
+             "Dollars/Person")
+
+vars <-  c("CPIAUCSL", "ILNGSP")
+
+titles <- c("Adjusted by Inflation (CPIAUCSL)",
+            "Adjusted by Illinois GDP (ILNGSP)")
+
+for (i in seq_along(vars)) {
+  
+  var   <- vars[i]
+  title <- titles[i]
+    ylabel  <- ylabels[i]
+
+    
+    graph <- totals2 |> 
+      mutate(
+        base2024 = .data[[var]] / .data[[var]][Year == 2024],
+        base1998 = .data[[var]] / .data[[var]][Year == 1998]
+      )  |>
+      
+      mutate(adj_dollars = Dollars*1000 / base2024) |>  
+      group_by(Year, type) |>
+    summarize(adj_dollars = sum(adj_dollars/ILPOP, na.rm = TRUE), .groups = "drop") |>
+    ggplot() + 
+      geom_recessions(text = FALSE, update = recessions)+
+
+      geom_line(aes(x = Year, y = adj_dollars, group = type, color = type), lwd = 1) +
+      theme_minimal() +
+    scale_y_continuous(labels=scales::dollar)+
+      scale_color_manual(values = c("Revenue" = "black", "Expenditures" = "red")) + 
+
+      scale_x_continuous(
+        expand = c(0,0), 
+        limits = c(1998, 2024), 
+        breaks = c(1998, 2005, 2010, 2015, 2020, current_year-1)
+      ) + 
+      labs(
+        title = title,
+        y = ylabel,
+        x = NULL
+      ) + 
+      theme(legend.title = element_blank()) 
+  
+  print(graph)
+}
+
+
+```
+
+
+# Deflated Values
+
+Deflating is what economists do to get rid of inflation noise and see real growth, real price changes, or compare across time.
+
+
+```{r warning = FALSE, message = FALSE}
+#| layout-ncol: 2
+
+ylabels <- c("Billions of Dollars",
+             "Billions of Dollars")
+
+
+vars <-  c("CPIAUCSL", "ILNGSP")
+
+titles <- c("Adjusted by Inflation (CPIAUCSL)",
+            "Adjusted by Illinois GDP (ILNGSP)")
+
+for (i in seq_along(vars)) {
+  
+  var   <- vars[i]
+  title <- titles[i]
+  ylabel  <- ylabels[i]
+  
+  
+  graph <- totals2 |> 
+    mutate(
+      base2024 = .data[[var]] / .data[[var]][Year == 2024],
+      base1998 = .data[[var]] / .data[[var]][Year == 1998]
+    )  |>
+    
+    mutate(adj_dollars = Dollars / base1998) |>  
+    group_by(Year, type) |>
+    summarize(adj_dollars = sum(adj_dollars, na.rm = TRUE), .groups = "drop") |>
+    ggplot() + 
+    geom_recessions(text = FALSE, update = recessions)+
+    
+    geom_line(aes(x = Year, y = adj_dollars, group = type, color = type), lwd = 1) +
+    theme_minimal() +
+    scale_y_continuous(labels=scales::dollar)+
+    scale_color_manual(values = c("Revenue" = "black", "Expenditures" = "red")) + 
+    
+    scale_x_continuous(
+      expand = c(0,0), 
+      limits = c(1998, 2024), 
+      breaks = c(1998, 2005, 2010, 2015, 2020, current_year-1)
+    ) + 
+    labs(
+      title = title,
+      y = ylabel,
+      x = NULL
+    ) + 
+    theme(legend.title = element_blank()) 
+  
+  print(graph)
+}
+
+
+```
+
+## Deflated Values per Person
+
+```{r warning = FALSE, message = FALSE}
+#| layout-ncol: 2
+
+ylabels <- c("Dollars/Person",
+             "Dollars/Person")
+
+vars <-  c("CPIAUCSL", "ILNGSP")
+
+titles <- c("Adjusted by Inflation (CPIAUCSL)",
+            "Adjusted by Illinois GDP (ILNGSP)")
+
+for (i in seq_along(vars)) {
+  
+  var   <- vars[i]
+  title <- titles[i]
+    ylabel  <- ylabels[i]
+
+    
+    graph <- totals2 |> 
+      mutate(
+        base2024 = .data[[var]] / .data[[var]][Year == 2024],
+        base1998 = .data[[var]] / .data[[var]][Year == 1998]
+      )  |>
+      
+      mutate(adj_dollars = Dollars*1000 / base1998) |>  
+      group_by(Year, type) |>
+    summarize(adj_dollars = sum(adj_dollars/ILPOP, na.rm = TRUE), .groups = "drop") |>
+    ggplot() + 
+      geom_recessions(text = FALSE, update = recessions)+
+
+      geom_line(aes(x = Year, y = adj_dollars, group = type, color = type), lwd = 1) +
+      theme_minimal() +
+    scale_y_continuous(labels=scales::dollar)+
+      scale_color_manual(values = c("Revenue" = "black", "Expenditures" = "red")) + 
+
+      scale_x_continuous(
+        expand = c(0,0), 
+        limits = c(1998, 2024), 
+        breaks = c(1998, 2005, 2010, 2015, 2020, current_year-1)
+      ) + 
+      labs(
+        title = title,
+        y = ylabel,
+        x = NULL
+      ) + 
+      theme(legend.title = element_blank()) 
+  
+  print(graph)
+}
+
+
+```
+
+
