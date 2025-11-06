@@ -1,0 +1,321 @@
+# Comparison to GOMB Totals {#sec-gomb-comparison}
+
+```{r setup, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(formatR)
+library(lubridate)
+library(scales)
+library(kableExtra)
+library(ggplot2)
+library(readxl)
+library(janitor)
+#devtools::install_github("CMAP-REPOS/cmapplot")
+library(cmapplot)
+
+theme_set(theme_classic() )
+
+move_to_last <- function(df, n) df[c(setdiff(seq_len(nrow(df)), n), n), ]
+
+
+current_year <- 2025 # fiscal year, not calendar year
+past_year=current_year-1
+
+rev_temp <- read_csv(paste0("../../Fiscal Futures IGPA/Fiscal-Future-Topics/data/FY", current_year, " Files/rev_temp.csv"))
+
+exp_temp <- read_csv(paste0("../../Fiscal Futures IGPA/Fiscal-Future-Topics/data/FY", current_year, " Files/exp_temp.csv"))
+```
+
+
+
+```{r include=FALSE}
+update_recessions <- function(url = NULL, quietly = FALSE){
+
+  # Use default URL if user does not override
+  if (is_null(url) | missing(url)) {
+    url <- "https://data.nber.org/data/cycles/business_cycle_dates.json"
+  }
+  
+   # locally bind variable names
+  start_char <- end_char <- start_date <- end_date <- ongoing <- index <- peak <- trough <- NULL
+
+  return(
+    # attempt to download and format recessions table
+    tryCatch({
+      recessions <- jsonlite::fromJSON(url) %>%
+        # drop first row trough
+        dplyr::slice(-1) %>%
+        # convert peaks and troughs...
+        dplyr::mutate(
+          # ...to R dates
+          start_date = as.Date(peak),
+          end_date = as.Date(trough),
+          # ... and clean char strings
+          start_char = format(start_date, "%b %Y"),
+          end_char = format(end_date, "%b %Y")) %>%
+        # confirm ascending and create row number
+        dplyr::arrange(start_date) %>%
+        mutate(index = row_number()) %>%
+        mutate(
+          # Flag unfinished recessions
+          ongoing = case_when(
+            is.na(end_date) & index == max(.$index) ~ T,
+            TRUE ~ F),
+          # set ongoing recession to arbitrary future date
+          end_date = case_when(
+            ongoing ~ as.Date("2200-01-01"),
+            TRUE ~ end_date),
+          # mark ongoing recession in char field
+          end_char = case_when(
+            ongoing ~ "Ongoing",
+            TRUE ~ end_char)
+          ) %>%
+        # clean up
+        select(start_char, end_char, start_date, end_date, ongoing)
+
+      if (!quietly) {message("Successfully fetched from NBER")}
+
+      # Return recessions
+      recessions
+    },
+    error = function(cond){
+      if (!quietly) message("WARNING: Fetch or processing failed. `NULL` returned.")
+      return(NULL)
+    }
+    )
+  )
+}
+
+#recess_table <- list(build_recessions(update))
+recessions <- update_recessions()
+
+```
+
+```{r}
+exp_temp |> group_by(agency, agency_name) |> summarize(recent_year = max(fy))
+```
+
+
+# GOMB Categories for Expenditures
+
+
+```{r}
+exp_temp |> 
+  filter(agency %in% c("478", "586", "444", "402", "426"))  |>
+    filter(fund_cat_name=="General Funds") |>
+  group_by(agency, year) %>% 
+  summarize(expenditure = sum (expenditure/1000000) ) %>% 
+  dplyr::filter(year == 2025)
+```
+
+591
+
+```{r gomb-codes}
+
+
+exp_temp <- exp_temp %>%
+  filter(agency != 799) |>
+  mutate(
+    gomb_cat = NA,
+    gomb_cat = case_when(
+            agency %in% c("586") ~ "K12",
+agency == "480" ~ "Early Childhood",
+      agency %in% c( "601","612","616","620","628","636", "644", "664" , "676", "684", "691", "695") ~ "Higher Education",
+      
+      agency >"100"& agency<"200" ~ "Government Services", # legislative
+      agency == "528"  | (agency>"200" & agency<"300") ~ "Government Services", # Court of claims & judicial
+      agency > "309" & agency < "400" ~ "Government Services",    # elected officers
+          
+      agency=="511" | agency=="554" | agency=="574" | agency=="598" ~ "Government Services",  # Capital improvement
+      
+      agency == "478" ~ "Healthcare", # was called Public aid in before 2005
+      
+      agency %in% c("406","420","452", "494", "524", "542","585") ~ "Economic Development", # agriculture, DCEO,  Labor, transportation, Commerce commission, human rights commission??? and SIDA
+      
+
+
+      
+      agency=="557" ~ "Tollway Authority",
+      
+      agency == "402" | agency == "418" | agency == "425" | agency == "427" | agency=="442" | agency == "444" | agency == "482" | agency == "497" | agency == "526" | agency == "537"  | agency == "558" ~ "Human Services", # employment security, Aging, human rights, public health, deaf commission, dcfs
+      T ~ NA)
+  ) %>%      
+
+  
+  mutate(gomb_cat = case_when(
+ #   agency=="478" & (appr_org=="01" | appr_org == "65" | appr_org=="88") & (object=="4900" | object=="4400") ~ "Medicaid", # separates CHIP from health and human services and saves it as Medicaid
+    
+ #   agency == "586" & fund == "0355" ~ "Medicaid",  # 586 (Board of Edu) has special education which is part of medicaid
+    
+    agency == "426" | agency == "440" | agency == "446" | agency=="466" | agency == "493" |  agency=="546" | agency == "563" | agency=="569" | agency=="578" | agency == "580" |  agency== "588"| agency == "590" | agency == "591" | agency=="532" |  agency=="592"  ~ "Public Safety", # public safety & Corrections, EPA, IEMA
+    
+
+     
+    
+    agency=="422" | agency == "503" | agency=="541" ~ "Environment & Culture", # environment & nat. resources
+    
+    
+
+  agency == "507"|  agency == "458" |   agency=="492" |  agency == "416" ~ "Government Services", # revenue & central management services
+  
+    agency=="448" & fy > 2016 ~ "Government Services", #add DoIT to central management 
+  
+  agency == "553" ~ "Government Services", # IL Municipal Retirement Fund, discontinuned agency since 2016
+    
+    T ~ as.character(gomb_cat))) %>%
+  
+  
+  mutate(gomb_cat = case_when(
+     agency %in% c("593","594","693","131","275", "589") ~ "Pensions",
+
+    agency=="692" | agency=="695" | agency == "684" |agency == "691" | (agency > "599" & agency<"677") ~ "Higher Education", # higher education
+    
+    
+    # other boards & Commissions
+     agency=="509" | agency=="510" | agency=="565" |agency=="517" | agency=="525"  | agency=="529" | agency=="541"  | agency=="548" |  agency=="555"  | agency=="559" | agency=="562" | agency=="564" | agency=="568" | agency=="579"  | agency=="587" | agency=="527" | agency=="585" | agency=="567" | agency=="571" | agency=="575" | agency=="540" | agency=="576" | agency=="564" | agency=="534" | agency=="520" | agency=="506" | agency == "533" ~ "Other Boards/Commissions", 
+    
+    # non-pension expenditures of retirement funds moved to "Other Departments"
+    # should have removed pension expenditures already from exp_temp in Pensions step above
+    agency=="131" | agency=="275" | agency=="589" | agency=="593"|agency=="594"|agency=="693" ~ "Government Services",
+   agency %in% c("583", "445") ~ "Other" , 
+    T ~ as.character(gomb_cat))) %>%
+
+  mutate(year = fy)
+
+
+exp_temp %>% filter(is.na(gomb_cat))
+
+table(exp_temp$gomb_cat)
+```
+
+
+```{r gomb-codes-old, eval=FALSE}
+
+
+exp_temp <- exp_temp %>%
+  filter(agency != 799) |>
+  mutate(
+    gomb_cat = NA,
+    gomb_cat = case_when(
+      
+      agency >"100"& agency<"200" ~ "Government Services", # legislative
+      agency == "528"  | (agency>"200" & agency<"300") ~ "Government Services", # Court of claims & judicial
+      agency > "309" & agency < "400" ~ "Government Services",    # elected officers
+          
+      agency %in% c("480", "586") ~ "Education", # ISBE = K-12 
+      
+      agency == "478" ~ "Healthcare", # was called Public aid in before 2005
+      
+      agency %in% c("406","420","452", "494", "524") ~ "Economic Development", # agriculture, DCEO,  Labor, transportation, Commerce commission, human rights commission??? and SIDA
+      
+
+      agency=="511" | agency=="554" | agency=="574" | agency=="598" ~ "Government Services",  # Capital improvement
+      
+      agency=="557" ~ "Tollway Authority",
+      
+      agency=="427"  ~ "Human Services", #employment security
+      
+      agency == "402" | agency == "418" | agency == "425" | agency=="442" | agency == "444" | agency == "482" | agency == "497" | agency == "526" | agency == "537" | agency == "542" | agency == "558" ~ "Human Services", # employment security, Aging, human rights, public health, deaf commission, dcfs
+      T ~ NA)
+  ) %>%      
+
+  
+  mutate(gomb_cat = case_when(
+ #   agency=="478" & (appr_org=="01" | appr_org == "65" | appr_org=="88") & (object=="4900" | object=="4400") ~ "Medicaid", # separates CHIP from health and human services and saves it as Medicaid
+    
+ #   agency == "586" & fund == "0355" ~ "Medicaid",  # 586 (Board of Edu) has special education which is part of medicaid
+    
+    agency == "426" | agency == "446" | agency=="466" | agency == "493" | agency == "532" |  agency=="546" | agency=="569" | agency=="578" | agency == "580" | agency=="583" |  agency=="588"| agency == "590" | agency=="591" |  agency=="592"  ~ "Public Safety", # public safety & Corrections, EPA, IEMA
+    
+
+     
+    
+    agency=="422" | agency == "503" | agency=="532" ~ "Environment & Culture", # environment & nat. resources
+    
+    agency == "440" | agency == "445" |   agency=="524" | agency=="563"  ~ "Government Services", # business regulation
+    
+  agency == "507"|  agency == "458" |   agency=="492" |  agency == "416" ~ "Government Services", # revenue & central management services
+  
+    agency=="448" & fy > 2016 ~ "Government Services", #add DoIT to central management 
+  agency == "553" ~ "Government Services", # IL Municipal Retirement Fund, discontinuned agency since 2016
+    
+    T ~ as.character(gomb_cat))) %>%
+  
+  
+  mutate(gomb_cat = case_when(
+    
+    agency=="692" | agency=="695" | agency == "684" |agency == "691" | (agency > "599" & agency<"677") ~ "Education", # higher education
+    
+
+    
+ #   agency=="445" | agency=="452" |agency=="458" | agency=="497" ~ "Other", # other departments
+    
+    # other boards & Commissions
+     agency=="509" | agency=="510" | agency=="565" |agency=="517" | agency=="525"  | agency=="529" | agency=="541"  | agency=="548" |  agency=="555"  | agency=="559" | agency=="562" | agency=="564" | agency=="568" | agency=="579"  | agency=="587" | agency=="527" | agency=="585" | agency=="567" | agency=="571" | agency=="575" | agency=="540" | agency=="576" | agency=="564" | agency=="534" | agency=="520" | agency=="506" | agency == "533" ~ "Other Boards/Commissions", 
+    
+    # non-pension expenditures of retirement funds moved to "Other Departments"
+    # should have removed pension expenditures already from exp_temp in Pensions step above
+    agency=="131" | agency=="275" | agency=="589" |agency=="593"|agency=="594"|agency=="693" ~ "Government Services",
+    
+    T ~ as.character(gomb_cat))) %>%
+
+  mutate(year = fy)
+
+exp_temp %>% filter(is.na(gomb_cat))
+
+table(exp_temp$gomb_cat)
+```
+
+```{r}
+exp_temp %>% 
+    dplyr::filter(year == 2025) |>
+
+  filter(fund_cat_name=="General Funds") |>
+  summarize(expenditure = sum (expenditure) )
+
+exp_temp %>% 
+  filter(fund_cat_name=="General Funds") |>
+  group_by(gomb_cat, year) %>% 
+  summarize(expenditure = sum (expenditure) ) %>% 
+  dplyr::filter(year == 2025)
+
+
+exp_temp %>% 
+  filter(fund_cat_name=="General Funds") |>
+  group_by(gomb_cat, year) %>% summarize(expenditure = sum (expenditure) ) %>% 
+  filter(gomb_cat %in% c("Economic Development", "Government Services", "Human Services", "Education", "Healthcare", "Pensions", "Public Safety")  ) %>%
+  ggplot() + geom_line(aes(x=year, y = expenditure/1000000000, color = gomb_cat))+scale_y_continuous(labels = scales::dollar, name = "Billions of Dollars") +
+  labs(x=NULL, color = "GOMB Category", title = "Expenditures by GOMB Category")
+```
+
+
+```{r}
+exp_temp %>% 
+    filter(fund_cat_name=="General Funds") |>
+  group_by(gomb_cat, year) %>% 
+  summarize(expenditure = sum (expenditure) )
+
+
+exp_temp %>% 
+    filter(fund_cat_name=="General Funds") |>
+  group_by(gomb_cat, year) %>% summarize(expenditure = sum (expenditure) ) %>% 
+  filter(!gomb_cat %in% c("Economic Development", "Government Services", "Human Services", "Education", "Healthcare", "Pensions", "Public Safety")  ) %>%
+  ggplot() + geom_line(aes(x=year, y = expenditure/1000000000, color = gomb_cat)) + scale_y_continuous(labels = scales::dollar, name = "Billions of Dollars") +
+  labs(x=NULL, color = "GOMB Category", title = "Expenditures by GOMB Category")
+
+```
+
+
+## Revenue
+
+```{r}
+rev_temp |>
+  filter(rev_type != "99") |>
+  filter(fund_cat_name == "General Funds") |>
+  filter(fy==2025) |>
+  group_by(rev_type, rev_type_name_COMPTROLLER) |> 
+  summarize(rev = round(sum(receipts/1000000)))
+  
+```
+
