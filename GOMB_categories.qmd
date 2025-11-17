@@ -38,12 +38,27 @@ current_year <- 2025 # fiscal year, not calendar year
 past_year=current_year-1
 
 rev_temp <- read_csv(paste0("../../Fiscal Futures IGPA/Fiscal-Future-Topics/data/FY", current_year, " Files/rev_temp.csv")) |>
-  mutate(fund_cat_name = ifelse(fund_cat_name == "General Fund", "General Funds", fund_cat_name))
+  mutate(fund_cat_name = ifelse(fund_cat_name == "General Fund", "General Funds", fund_cat_name),
+         fund_cat_name = ifelse(fund_cat_name == "REVOLVING FUNDS", "Revolving Funds", fund_cat_name)
+         ) 
 
 exp_temp <- read_csv(paste0("../../Fiscal Futures IGPA/Fiscal-Future-Topics/data/FY", current_year, " Files/exp_temp.csv")) |>
-  mutate(fund_cat_name = ifelse(fund_cat_name == "General Fund", "General Funds", fund_cat_name))
+  mutate(fund_cat_name = ifelse(fund_cat_name == "General Fund", "General Funds", fund_cat_name),
+         fund_cat_name = ifelse(fund_cat_name == "REVOLVING FUNDS", "Revolving Funds", fund_cat_name)
+         ) 
+
 
 ```
+
+```{r}
+#| tbl-cap: "Funds excluded from fiscal futures gap calculation."
+
+exp_temp |> filter(in_ff== 0 ) |> group_by(fy, fund, fund_name_ab) |> summarize(expenditure = round(sum(expenditure))) |> filter(fy == 2025)|> arrange(desc(expenditure))
+
+rev_temp |> filter(in_ff== 0 ) |> group_by(fy, fund, fund_name_ab) |> summarize(revenue = round(sum(receipts))) |> filter(fy == 2025)|> arrange(desc(revenue))
+
+```
+
 
 
 
@@ -112,6 +127,12 @@ recessions <- update_recessions()
 
 ```{r}
 exp_temp |> group_by(agency, agency_name) |> summarize(recent_year = max(fy))
+```
+
+```{r drop-inff0s}
+exp_temp <- exp_temp |> filter(in_ff == 1)
+rev_temp <- rev_temp |> filter(in_ff == 1)
+
 ```
 
 
@@ -332,7 +353,7 @@ exp_temp %>%
 #| label: notgeneralfunds
 
 exp_temp %>% 
-  filter(fy == 2025 & agency != 799) |>
+  filter(fy == 2025 & agency != 799 & in_ff == 1) |>
 
   filter(fund_cat_name !="General Funds") |>
   summarize(expenditure = sum (expenditure) )
@@ -382,6 +403,16 @@ exp_temp %>%
 
 ```{r}
 rev_temp |>
+  filter(rev_type == "02") |>
+  filter(fund_cat_name == "General Funds") |>
+  filter(fy==2025) |>
+  group_by(rev_type, rev_type_name_COMPTROLLER) |> 
+  summarize(rev = round(sum(receipts/1000000)))
+```
+
+
+```{r}
+rev_temp |>
   filter(rev_type != "99") |>
   filter(fund_cat_name == "General Funds") |>
   filter(fy==2025) |>
@@ -399,17 +430,15 @@ rev_temp |>
 
 ```{r}
 rev_temp |>
-  filter(fund != "0462")|>
   filter(!rev_type %in% c("32", "45", "51", 
                "66", "72", "75", "76", "79", "98", "99")) |>
-  filter(fund_cat_name != "General Funds" & fund_cat_name != "General Fund") |>
+  filter(fund_cat_name != "General Funds") |>
   filter(fy==2025) |>
   group_by(rev_type, rev_type_name_COMPTROLLER, fund_cat_name) |> 
   summarize(rev = round(sum(receipts/1000000)))
 
 rev_temp |>
-    filter(fund != "0462")|>
-  filter(fund_cat_name != "General Funds" & fund_cat_name != "General Fund") |>
+  filter(fund_cat_name != "General Funds") |>
   group_by(fy, rev_type, rev_type_name_COMPTROLLER) |> 
   summarize(rev = round(sum(receipts/1000000000)))%>% 
   ggplot() + geom_line(aes(x=fy, y = rev, color = rev_type), lwd = 1) + 
@@ -418,8 +447,6 @@ rev_temp |>
 
 
 rev_temp |>
-    filter(!fund %in% c("0462", "0479") ) |>
-
   filter(!rev_type %in% c("32", "45", "51", 
               "66", "72", "75", "76", "79", "98", "99")) |>
   filter(fund_cat_name != "General Funds" & fund_cat_name != "General Fund") |>
