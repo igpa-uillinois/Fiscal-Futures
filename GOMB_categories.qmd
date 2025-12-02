@@ -126,6 +126,8 @@ recessions <- update_recessions()
 ```
 
 ```{r}
+#| tbl-cap: Agencies that have existed and the most recent year of their existance. 
+
 exp_temp |> group_by(agency, agency_name) |> summarize(recent_year = max(fy))
 ```
 
@@ -138,6 +140,95 @@ rev_temp <- rev_temp |> filter(in_ff == 1)
 
 # GOMB Categories for Expenditures
 
+### Expenditure Categories in Operating and Capital Budget
+
+```{r}
+exp_temp <- exp_temp |> mutate(
+  gomb_cat2 = case_when(
+    agency %in% c(586, 593, 594) ~ "Elem & Second Education",
+    agency %in% c(600:695) ~ "Higher Education",
+    agency %in% c(100:167, 510) ~ "Legislative",
+    agency %in% c(200:295, 528) ~ "Judicial ",
+    agency %in% c(300:370, 445, 509, 587) ~ "Elected Officials",
+    agency %in% c(400:592, 598) ~ "Governor's Agencies",   # if coded in previous steps, it is NOT recoded with case_when()
+    agency == 799 ~ "Statutory Transfers",
+    T ~ "FIXME"
+  )
+)
+
+exp_temp |> filter(gomb_cat2 == "FIXME")
+# agencies 594, 598 were old agencies not coded into the case_when() statement but it is fixed now
+
+table(exp_temp$gomb_cat2)
+
+```
+
+
+```{r}
+
+exp_temp %>% 
+   filter(agency != 799) |>
+  filter(fund_cat_name=="General Funds") |>
+  group_by(fy) %>% 
+  summarize(expenditure = sum (expenditure) ) %>% 
+  dplyr::filter(fy == 2025)
+
+
+exp_temp %>% 
+   filter(agency != 799) |>
+  filter(fund_cat_name=="General Funds") |>
+  group_by(gomb_cat2, fy) %>% 
+  summarize(expenditure = sum (expenditure) ) %>% 
+  dplyr::filter(fy == 2025)
+
+
+exp_temp %>% 
+  filter(fund_cat_name=="General Funds") |>
+  group_by(gomb_cat2, fy) %>% summarize(expenditure = sum (expenditure) ) %>% 
+  ggplot() + geom_line(aes(x=fy, y = expenditure/1000000000, color = gomb_cat2), lwd = 1)+
+  scale_y_continuous(labels = scales::dollar, name = "Billions of Dollars") +
+  labs(x=NULL, color = "GOMB Category", title = "General Fund Expenditures by GOMB Category")
+```
+
+
+```{r}
+
+exp_temp %>% 
+  group_by(fy) %>% 
+  summarize(expenditure = sum (expenditure) ) %>% 
+  dplyr::filter(fy == 2025)
+
+exp_temp %>% 
+  filter(agency!=799) |>
+  group_by(fund_cat_name, fy) %>% 
+  summarize(expenditure = sum (expenditure) ) %>% 
+  dplyr::filter(fy == 2025)
+
+exp_temp %>% 
+  group_by(gomb_cat2, fy) %>% 
+  summarize(expenditure = sum (expenditure) ) %>% 
+  dplyr::filter(fy == 2025)
+
+exp_temp %>% 
+  group_by(gomb_cat2, fy) %>% 
+  summarize(expenditure = sum (expenditure) ) %>% 
+  ggplot() + geom_line(aes(x=fy, y = expenditure/1000000000, color = gomb_cat2), lwd = 1)+
+  scale_y_continuous(labels = scales::dollar, name = "Billions of Dollars") +
+  labs(x=NULL, color = "GOMB Category", title = "All Fund Expenditures by GOMB Category")
+```
+
+```{r}
+#| tbl-cap: "For comparison with FY25 and FY26 Table 1-A Operating and Capital Budget Document. Part of Budget Books posted online by GOMB. In Thousands of Dollars."
+
+exp_temp |> 
+  filter(fy == 2025 & agency != 799) |> 
+  mutate(fund_cat_grouped = ifelse(fund_cat_name == "General Funds", "General Funds", "Other State and Federal")) |> 
+  group_by(gomb_cat2, agency, fund_cat_grouped) |> summarize(Dollars = round(sum(expenditure)/1000))
+```
+
+
+
+## GOMB Categories by Function for General Fund Comparison
 
 ```{r}
 exp_temp |> 
@@ -148,78 +239,77 @@ exp_temp |>
   dplyr::filter(fy == 2025)
 ```
 
-591
+
 
 ```{r gomb-codes}
-
 
 exp_temp <- exp_temp %>%
   filter(agency != 799) |>
   mutate(
     gomb_cat = NA,
     gomb_cat = case_when(
-            agency %in% c("586") ~ "K12",
-agency == "480" ~ "Early Childhood",
+      agency %in% c("586") ~ "K12",
+      agency == "480" ~ "Early Childhood",
       agency %in% c( "601","612","616","620","628","636", "644", "664" , "676", "684", "691", "695") ~ "Higher Education",
       
       agency >"100"& agency<"200" ~ "Government Services", # legislative
       agency == "528"  | (agency>"200" & agency<"300") ~ "Government Services", # Court of claims & judicial
       agency > "309" & agency < "400" ~ "Government Services",    # elected officers
-          
+      
       agency=="511" | agency=="554" | agency=="574" | agency=="598" ~ "Government Services",  # Capital improvement
       
       agency == "478" ~ "Healthcare", # was called Public aid in before 2005
       
       agency %in% c("406","420","452", "494", "524", "542","585") ~ "Economic Development", # agriculture, DCEO,  Labor, transportation, Commerce commission, human rights commission??? and SIDA
       
-
-
+      
+      
       
       agency=="557" ~ "Tollway Authority",
       
       agency == "402" | agency == "418" | agency == "425" | agency == "427" | agency=="442" | agency == "444" | agency == "482" | agency == "497" | agency == "526" | agency == "537"  | agency == "558" ~ "Human Services", # employment security, Aging, human rights, public health, deaf commission, dcfs
       T ~ NA)
   ) %>%      
-
+  
   
   mutate(gomb_cat = case_when(
- #   agency=="478" & (appr_org=="01" | appr_org == "65" | appr_org=="88") & (object=="4900" | object=="4400") ~ "Medicaid", # separates CHIP from health and human services and saves it as Medicaid
+    #   agency=="478" & (appr_org=="01" | appr_org == "65" | appr_org=="88") & (object=="4900" | object=="4400") ~ "Medicaid", # separates CHIP from health and human services and saves it as Medicaid
     
- #   agency == "586" & fund == "0355" ~ "Medicaid",  # 586 (Board of Edu) has special education which is part of medicaid
+    #   agency == "586" & fund == "0355" ~ "Medicaid",  # 586 (Board of Edu) has special education which is part of medicaid
     
     agency == "426" | agency == "440" | agency == "446" | agency=="466" | agency == "493" |  agency=="546" | agency == "563" | agency=="569" | agency=="578" | agency == "580" |  agency== "588"| agency == "590" | agency == "591" | agency=="532" |  agency=="592"  ~ "Public Safety", # public safety & Corrections, EPA, IEMA
     
-
-     
+    
+    
     
     agency=="422" | agency == "503" | agency=="541" ~ "Environment & Culture", # environment & nat. resources
     
     
-
-  agency == "507"|  agency == "458" |   agency=="492" |  agency == "416" ~ "Government Services", # revenue & central management services
-  
+    
+    agency == "507"|  agency == "458" |   agency=="492" |  agency == "416" ~ "Government Services", # revenue & central management services
+    
     agency=="448" & fy > 2016 ~ "Government Services", #add DoIT to central management 
-  
-  agency == "553" ~ "Government Services", # IL Municipal Retirement Fund, discontinuned agency since 2016
+    
+    agency == "553" ~ "Government Services", # IL Municipal Retirement Fund, discontinuned agency since 2016
     
     T ~ as.character(gomb_cat))) %>%
   
   
   mutate(gomb_cat = case_when(
-     agency %in% c("593","594","693","131","275", "589") ~ "Pensions",
-
+    agency %in% c("593","594","693","131","275", "589") ~ "Pensions",
+    
     agency=="692" | agency=="695" | agency == "684" |agency == "691" | (agency > "599" & agency<"677") ~ "Higher Education", # higher education
     
     
     # other boards & Commissions
-     agency=="509" | agency=="510" | agency=="565" |agency=="517" | agency=="525"  | agency=="529" | agency=="541"  | agency=="548" |  agency=="555"  | agency=="559" | agency=="562" | agency=="564" | agency=="568" | agency=="579"  | agency=="587" | agency=="527" | agency=="585" | agency=="567" | agency=="571" | agency=="575" | agency=="540" | agency=="576" | agency=="564" | agency=="534" | agency=="520" | agency=="506" | agency == "533" ~ "Other Boards/Commissions", 
+    agency=="509" | agency=="510" | agency=="565" |agency=="517" | agency=="525"  | agency=="529" | agency=="541"  | agency=="548" |  agency=="555"  | agency=="559" | agency=="562" | agency=="564" | agency=="568" | agency=="579"  | agency=="587" | agency=="527" | agency=="585" | agency=="567" | agency=="571" | agency=="575" | agency=="540" | agency=="576" | agency=="564" | agency=="534" | agency=="520" | agency=="506" | agency == "533" ~ "Other Boards/Commissions", 
     
     # non-pension expenditures of retirement funds moved to "Other Departments"
     # should have removed pension expenditures already from exp_temp in Pensions step above
     agency=="131" | agency=="275" | agency=="589" | agency=="593"|agency=="594"|agency=="693" ~ "Government Services",
-   agency %in% c("583", "445") ~ "Other" , 
+    agency %in% c("583", "445") ~ "Other" , 
     T ~ as.character(gomb_cat))) %>%
-
+  
   mutate(year = fy)
 
 
@@ -227,6 +317,7 @@ exp_temp %>% filter(is.na(gomb_cat))
 
 table(exp_temp$gomb_cat)
 ```
+
 
 
 ```{r gomb-codes-old, eval=FALSE}
@@ -399,11 +490,36 @@ exp_temp %>%
 ```
 
 
-## Revenue
+# Revenue
 
 ```{r}
+#| tbl-cap: Individual Income tax
+
+
 rev_temp |>
   filter(rev_type == "02") |>
+  filter(fund_cat_name == "General Funds") |>
+  filter(fy==2025) |>
+  group_by(rev_type, rev_type_name_COMPTROLLER) |> 
+  summarize(rev = round(sum(receipts/1000000)))
+```
+
+
+```{r}
+#| tbl-cap: Sales tax items included in Fiscal Futures revenue. 
+
+rev_temp |>
+  filter(rev_type == "06") |>
+  filter(fy==2025) |>
+  group_by(rev_type, rev_type_name_COMPTROLLER, fund, fund_cat_name) |> 
+  summarize(rev = round(sum(receipts/1000000)))
+
+rev_temp |>
+  filter(rev_type == "06") |>
+  filter(fund_cat_name == "General Funds") 
+
+rev_temp |>
+  filter(rev_type == "06") |>
   filter(fund_cat_name == "General Funds") |>
   filter(fy==2025) |>
   group_by(rev_type, rev_type_name_COMPTROLLER) |> 
@@ -471,4 +587,65 @@ rev_temp|>
   group_by(fund_cat_name) |> 
   summarize(rev = round(sum(receipts/1000000000), digits = 2))
 ```
+
+# Inter-agency receipts
+
+```{r}
+rev_temp |> filter(rev_type == 75 & fy==2025) |>
+  mutate(receipts = round((receipts/1000000000))) |>
+  arrange(desc(receipts))
+
+# interfund transfers items we exclude 1900 | 1991 | 1993
+exp_temp |> filter(object == "1993" & fy==2025) |> arrange(desc(expenditure))
+
+```
+
+
+# Medicaid Check - County provider fund
+
+```{r}
+rev_temp |> filter(fy == 2025 & fund == "0329")
+exp_temp |> filter(fy == 2025 & fund == "0329")
+```
+
+# Sales Tax Revenue and Transfers 
+
+```{r}
+
+rev_temp |> filter(fy > 2020 & source == "0481")
+
+rev_temp |> filter(fy > 2020 & fund == "0186")
+
+rev_temp |> filter(fy == 2025 & fund == "0186")
+
+exp_temp |> filter(fy > 2020 & fund == "0186")
+
+exp_temp |> filter(fy == 2025 & obj_seq_type == "492SALEST")
+
+
+exp_temp |> filter(fy == 2025 & obj_seq_type == "492SALEST")
+
+```
+
+# Refunds
+
+```{r}
+all_rev <- read_csv(paste0("data/FY", current_year, " Files/allrevfiles_2025.csv")) |> filter(fy > 2020)
+all_exp <- read_csv(paste0("data/FY", current_year, " Files/allexpfiles_2025.csv")) |> filter(fy > 2020)
+
+
+all_rev |> filter(fy > 2020 & fund == "0401")
+all_rev |> filter(fy > 2020 & fund == "0401") |> group_by(fy) |> 
+  summarize(receipts = round(sum(receipts)))
+
+all_exp |> filter(fy > 2020 & fund == "0401")
+all_exp |> filter(fy > 2020 & fund == "0401") |> group_by(fy) |> summarize(expenditure = round(sum(expenditure)))
+
+all_exp |> filter(fy > 2020 & obj_seq_type == "370PROTST")
+all_exp |> filter(fy > 2020 & obj_seq_type == "370PROTST") |> group_by(fy) |> summarize(expenditure = round(sum(expenditure)))
+
+```
+
+
+
 
