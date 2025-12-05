@@ -78,12 +78,12 @@ rev_current <- read_xlsx("inputs/ioc_data_received/revenue/Fis_Fut_Rev_2025_Fina
 
 
 
-exp_variable_names <- read_xlsx("inputs/ioc_data_received/expenditures/Fis_Fut_Exp_2025.xlsx") |> names()
+exp_variable_names <- read_xlsx("inputs/ioc_data_received/expenditures/Fis_Fut_Exp_2025_Final.xlsx") |> names()
 exp_variable_names
 # some variable names in the excel file received change
 # check each year during preliminary and final datasets 
 # can't bind rows unless columns match
-exp_current <- read_xlsx("inputs/ioc_data_received/expenditures/Fis_Fut_Exp_2025.xlsx") %>% 
+exp_current <- read_xlsx("inputs/ioc_data_received/expenditures/Fis_Fut_Exp_2025_Final.xlsx") %>% 
   rename(fy = 'FISCAL YEAR',
          fund = 'FUND',
          fund_name = 'FUND NAME',
@@ -93,9 +93,9 @@ exp_current <- read_xlsx("inputs/ioc_data_received/expenditures/Fis_Fut_Exp_2025
          org_name = 'ORGANIZATION NAME',
          obj_seq_type = 'APPROPRIATION',
          wh_approp_name = 'APPROPRIATION NAME',
-         appn_net_xfer = 'APPROPRIATED AMOUNT',
-         expenditure = 'EXPENDED AMOUNT') %>%
-  mutate( data_source = "exp IOC 07.16.2025"
+         appn_net_xfer = 'APPROPRIATED AMT NET OF TRANSFERS',
+         expenditure = 'EXPENDED AMT') %>%
+  mutate( data_source = "exp IOC 12.02.2025"
   )  |> 
   select(fy, fund, fund_name, agency, agency_name, appr_org, org_name, obj_seq_type, wh_approp_name, appn_net_xfer, expenditure, data_source)
 
@@ -163,7 +163,7 @@ allexpfiles_current <- allexpfiles_past %>%
 # fy22 225587 obs, 21 vars.
 # fy23 238089 obs
 # fy24 250,411 obs
-# fy25 262,837 obs
+# fy25 262,838 obs
 
 write_csv(allrevfiles_current, paste0("data/FY", current_year, " Files/allrevfiles_", current_year, ".csv"))
 
@@ -340,7 +340,8 @@ anti_join(funds, funds_past, by = c("fund", "fund_name")) %>%
   arrange(fund)
 ```
 
-13 revenue funds were in new revenue data that were not in past data Remember, some of them maybe be false alarms and have small fund name changes.
+13 revenue funds were in new revenue data that were not in past data.
+Remember, some of them maybe be false alarms and have small fund name changes.
 
 ```{r}
 sources_past <- allrevfiles  %>% 
@@ -371,7 +372,7 @@ There are {`r print(nrow(new))`} revenue sources were in new data that were not 
 ### Recoding New and Reused Funds
 
 ::: {.callout-warning icon="false"}
-Remember: `allrevfiles` and `allexpfiles` contain the data received from the comptroller without recoding agencies or funds that have changed between fiscal years. Variables were renamed when needed to have consistent names but funds and agencies have NOT been recoded for consistency in these files.
+Remember: `allrevfiles` and `allexpfiles` contain the data received from the comptroller without recoding agencies or funds that have changed between fiscal years. Variables were renamed when needed to have consistent names but funds and agencies have NOT been recoded for consistentcategories using Fiscal Future categories in these files.
 :::
 
 New or reused funds were manually added to the `funds_ab_in.xlsx` file and determined if they should or should not be included in Fiscal Future calculations.
@@ -525,10 +526,13 @@ exp_temp <- exp_allyears %>%
   left_join(funds_ab_in, by = "fund")
 
 
+# Variables below only used for inspecting transfers. Transfers are excluded when 
+# filtering out agency 799 for Fiscal Gap calculations, 
+# but check for trans_type =="EXCESS" for extra funds that moved back into General Revenue Fund
+# (Income tax refund excess amounts were flagged by GOMB.)
 
-# I think we can delete this. But still checking and running code - AWM 7/16/2025
 # Agency == 799 for Statutory transfers 
-#  Object == 1993 is for Interfund cash transfers  
+# Object == 1993 is for Interfund cash transfers  
  exp_temp <- exp_temp %>% 
   mutate(transfer = ifelse(org_name == "TRANSFERS", 1, 0),
          trans_agency = ifelse(org_name == "TRANSFERS",
