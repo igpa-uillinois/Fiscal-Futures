@@ -12,7 +12,6 @@ format:
     df-print: paged
 ---
 
-hi
 
 # Comparison to GOMB Totals {#sec-gomb-comparison}
 
@@ -141,7 +140,11 @@ rev_temp <- rev_temp |> filter(in_ff == 1)
 
 # GOMB Categories for Expenditures
 
-### Expenditure Categories in Operating and Capital Budget
+> Note: Local Transfers go directly to Local Government Distributive Fund instead of the General Fund, as of 2018. Distributed sales tax go directly to the Public Transportation Fund and Downstate Public Transit fund instead of the general fund. Before 2018, these dollars were received in the general fund and then transfered to the funds mentioned. [GOMB's Economic and Fiscal Policy Report, pg 15](https://budget.illinois.gov/content/dam/soi/en/web/budget/documents/economic-and-fiscal-policy-reports/Economic_and_Fiscal_Policy_Report_FY26_10.9.25.pdf)
+
+
+
+## Expenditure Categories in Operating and Capital Budget
 
 ```{r}
 exp_temp <- exp_temp |> mutate(
@@ -169,7 +172,7 @@ table(exp_temp$gomb_cat2)
 
 exp_temp %>% 
    filter(agency != 799) |>
-  filter(fund_cat_name=="General Funds") |>
+  filter(fund_cat_name=="General Funds" | ()) |>
   group_by(fy) %>% 
   summarize(expenditure = sum (expenditure) ) %>% 
   dplyr::filter(fy == 2025)
@@ -193,7 +196,6 @@ exp_temp %>%
 
 
 ```{r}
-
 exp_temp %>% 
   group_by(fy) %>% 
   summarize(expenditure = sum (expenditure) ) %>% 
@@ -209,7 +211,11 @@ exp_temp %>%
   group_by(gomb_cat2, fy) %>% 
   summarize(expenditure = sum (expenditure) ) %>% 
   dplyr::filter(fy == 2025)
+```
 
+
+```{r}
+#| label: fig-allfunds-expenditures-gombcat
 exp_temp %>% 
   group_by(gomb_cat2, fy) %>% 
   summarize(expenditure = sum (expenditure) ) %>% 
@@ -588,6 +594,36 @@ rev_temp|>
   group_by(fund_cat_name) |> 
   summarize(rev = round(sum(receipts/1000000000), digits = 2))
 ```
+
+## COGFA general fund receipt categories
+
+**General Fund Receipts**
+
+State taxes: PIT, CIT, Salse tax, public utility tax, cigarette tax, liquor gallonage tax, estate tax, insurance taxes and fees, corporate franchise tax and fees, interest on state funds and investments, cook county IGT, Other sources
+
+Transfers in: Lottery, gaming, spots wagering, cannais, refund fund, and "Other"
+
+Federal sources
+ 
+- Revenue types: 
+
+Lottery Receipts (rev_type ==33)
+
+  - Lottery (fund = 0412, source = 0912)  
+  - State Lottery (fund 0906, source = 1154)  
+  
+  
+**Non-general Funds distributions**: Subtract refund funds (personal income tax and corporate income tax), local government distributive fund (personal income tax and corporate income tax), sale tax distributions (road fund and distribution to PTF and DPTF)
+  
+```{r}
+transfers_in <- transfer_in_funds <- c("0912", )
+  
+  
+# state_rev <- rev_temp |> 
+  
+
+```
+
 
 # Inter-agency receipts
 
