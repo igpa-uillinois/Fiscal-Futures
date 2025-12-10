@@ -12,6 +12,7 @@ format:
     df-print: paged
 ---
 
+hi
 
 # Comparison to GOMB Totals {#sec-gomb-comparison}
 
