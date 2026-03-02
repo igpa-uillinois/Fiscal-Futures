@@ -10,10 +10,13 @@ This is a novel dataset containing all revenue items and all expenditure items f
 
 This document is a good faith effort to increase reproducibility and transparency. It is a living document in which we aim to describe things as clearly as possible in the time we have, share it with others, and improve each time we come back to it.
 
+A [Report on FY25 State Revenue](https://hdl.handle.net/2142/132717) was released in January 2026
+
+- Alea Wilbur-Mujtaba, David F. Merriman, Paula R. Worthington, Jahun Lee, and Xiaoyan Hu. (2026). IGPA. "Current Condition and Future Concerns for Growth in Illinois’ State Revenue" <https://hdl.handle.net/2142/132717>
 
 The FY24 Fiscal Futures Report is available here: [The State of Illinois' FY 2024 Fiscal Situation: A Solid Performance but Threats Remain](https://igpa.uillinois.edu/wp-content/uploads/2025/07/IPGA-FY24-Annual-Report-07-15-25.pdf)
 
-- David Merriman, Richard Funderburg, Xiaoyan Hu, Jahun Lee, Alea Wilbur-Mujtaba, Paula Worthington. (2025).Institute of Government and Public Affairs."The State of Illinois' FY 2024 Fiscal Situation: A Solid Performance but Threats Remain".  <https://igpa.uillinois.edu/fiscal-and-economic-policy/new-policy-spotlight-highlights-illinois-financial-gains-discusses-potential-benefits-of-a-service-sector-sales-tax>.
+- David Merriman, Richard Funderburg, Xiaoyan Hu, Jahun Lee, Alea Wilbur-Mujtaba, Paula Worthington. (2025). Institute of Government and Public Affairs."The State of Illinois' FY 2024 Fiscal Situation: A Solid Performance but Threats Remain".  <https://igpa.uillinois.edu/fiscal-and-economic-policy/new-policy-spotlight-highlights-illinois-financial-gains-discusses-potential-benefits-of-a-service-sector-sales-tax>.
 
 
 Read the FY23 Fiscal Futures Report here: [Finding the Balance: State Fiscal Sustainability and Local Government Challenges](https://igpa.uillinois.edu/reports/finding-the-balance-state-fiscal-sustainability-and-local-government-fiscal-challenges)
