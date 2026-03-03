@@ -1,6 +1,6 @@
 ## Debt Service Discussion
 
-```{r warning = FALSE, message=FALSE}
+```{r setup, warning = FALSE, message=FALSE}
 
 library(tidyverse)
 library(haven)
@@ -34,6 +34,11 @@ Debt Service expenditures include interest payment on both short-term and long-t
 
 **Methodological Change, Sept. 30 2022:** We are no longer including short term principal payments as a cost; only interest on borrowing is a cost. Pre FY22 and the FY21 correction, we did include an escrow payment and principle payments as costs but not bond proceeds as revenues. This caused expenditures to be inflated because we were essentially counting debt twice - the principle payment and whatever the money was spent on in other expenditure categories, which was incorrect.
 
+
+```{r}
+exp_temp |> filter(agency == 370 & fy == 2025)
+```
+
 ### Coding Details
 
 **Expenditure Debt Objects:**
@@ -46,6 +51,8 @@ Debt Service expenditures include interest payment on both short-term and long-t
     -   Interest on short-term borrowing: 88130108
 -   8841 is for escrow payments **EXCLUDE**
     -   Escrow payment: obj_seq_type == 88410008
+-   4470 for McCormick Place expansion project   
+  -     from fund 0377   
 -   8800 is for all capital projects debt service (e.g. Build Illinois Bonds, Civic Center) **INCLUDE AS COST**
     -   *Note: debt principle and interest are both included in capital projects because they are combined in the data observations; bond proceeds are not considered a revenue source. Can't include capital projects interest as easily as the GO bonds.*
     -   Build IL Bonds, capital projects principal AND interest (object ==8800)
@@ -54,12 +61,32 @@ Debt Service expenditures include interest payment on both short-term and long-t
 
 #### State Principal and Interest
 
-Filtering for interest on short term borrowing and GO bonds (88130008, 88130000, and 88130108) and GO bond principal amounts (88110008). Object == 8813 is for all debt service interest but obj_seq_type is used to specify short term borrowing versus regular debt service. An Interest to Principal ratio is also calculated in the table below.
+All principal 
+
+```{r}
+# principal 
+
+exp_temp %>% 
+  filter(object == "8811") %>% 
+  group_by(fy) %>% 
+  summarize(sum = sum(expenditure, na.rm=FALSE))
+
+exp_temp %>% 
+  filter(object == "8813") %>% 
+  group_by(fy) %>% 
+  summarize(sum = sum(expenditure, na.rm=FALSE))
+
+```
+
+
+Filtering for interest on short term borrowing and GO bonds (88130008, 88130000, and 88130108) and GO bond principal amounts (88110008). 
+
+An Interest to Principal ratio is also calculated in the table below.
 
 Looking only at general obligation principal payments and interest payments:
 
 ```{r}
-# GO bond principal and GO bond interest
+#| tbl-cap: "GO bond principal and GO bond interest"
 
 GObond_debt <- exp_temp %>% 
   filter(obj_seq_type == "88110008" |obj_seq_type == "88130000" | obj_seq_type == "88130008") %>% 
@@ -91,10 +118,11 @@ GObond_debt %>%
 
 ```
 
-Looking only at short term borrowing principal and interest payments:
 
 ```{r}
-# short term borrowing, first observation is in 2004?
+#| tbl-cap: "Short term borrowing principal and interest payments. "
+#| 
+# short term borrowing, first observation is in 2004
 
 short_debt <- exp_temp %>% 
   filter(obj_seq_type == 88110108 |obj_seq_type == 88130108) %>% 
@@ -116,9 +144,20 @@ short_debt %>% ggplot() +
   labs(title = "Debt Service", subtitle = "Short Term Borrowing: Principal and Interest Payments", y="Billions of Dollars", fill = element_blank())
 ```
 
+#### Capital Projects (w/o Tollway)
+
 Debt service for Capital projects (object==8800) is examined below. Tollway debt service is EXCLUDED from these values. The ratio calculated in the table below is interest/principal.
 
+Capital projects might be missing mccormick expansion project?
+
+
 ```{r}
+
+exp_temp %>%  
+  filter(fy == 2025) |> 
+  filter(fund != "0455" & (object == "8811" |object == "8813" | object == "8800")) %>%  # all principal, interest, and debt service except Tollway
+  summarize(sum = sum(expenditure, na.rm=TRUE))
+
 capitalprojects <- exp_temp %>% 
   filter(object == "8800" & fund != "0455") # capital debt service except tollway
 
@@ -154,13 +193,14 @@ all_debt %>%
 
 ```
 
-#### 
 
 For additional context on bond proceeds coming in compared to the debt service being paid, here is a very simple graph of all bond proceeds. Bond proceeds are not considered a revenue source in the Fiscal Futures model. We do not dive into the different types of proceeds but that could be an interesting topic by itself.
 
 ```{r}
-rev_temp %>% 
-  filter(rev_type == "72")
+rev_temp %>% filter(rev_type == "72") %>% 
+  ggplot() + 
+  geom_col(aes(x=fy, y=receipts)) + labs(title = "All Bond Proceeds, Revenue Type = 72") +    
+  scale_x_continuous(limits = c(1998, current_year), n.breaks = 6)
 
 bond_proceeds <- rev_temp %>% 
   filter(rev_type == "72") %>% #bond proceeds
@@ -168,15 +208,31 @@ bond_proceeds <- rev_temp %>%
   group_by(fy, fund_cat_name) %>% 
   summarize(sum = sum(receipts/1000000000, na.rm=FALSE))
 
-rev_temp %>% filter(rev_type == "72") %>% ggplot() + geom_col(aes(x=fy, y=receipts)) + labs(title = "All Bond Proceeds") +       scale_x_continuous(limits = c(1998, current_year), n.breaks = 6)
-
 bond_proceeds %>% ggplot() + 
   theme_classic() +
   geom_line(aes(x=fy, y=sum, color=fund_cat_name)) + 
   scale_x_continuous(limits = c(1998, current_year), n.breaks = 6) +
-  
-  labs(title = "Bond Proceeds, Revenue Type = 72", y="Billions of Dollars", color = element_blank() )
+  labs(title = "Bond Proceeds by Fund Type, Revenue Type = 72", y= "Billions of Dollars", color = element_blank() )
 ```
+
+
+
+Bond proceeds were $2.7 billion in 2025.
+
+Debt Service Funds had $4.2 billion in expenditures in 2025.
+
+
+```{r}
+rev_temp %>% 
+  filter(rev_type == "72" & fy == 2025)
+
+rev_temp %>% 
+  filter(fy == 2025 & source_name == "BOND ISSUE PROCEEDS") |> summarize(receipts = sum(receipts))
+
+
+```
+
+
 
 #### Tollway Debt, Revenue, and Expenditures
 
@@ -195,7 +251,6 @@ Principal and interest amounts calculated for the state exclude the Illinois Tol
 The object `tollway` includes all Tollway expenditures (capital improvements, principal and interest payments, operations, etc).
 
 ```{r tollway}
-
 # exp_temp %>% 
 #   filter(fund == "0455") %>%       # tollway fund
 #   group_by(fy) %>% 
@@ -284,7 +339,12 @@ ggplot()+
        caption = "Tollway revenue + bond proceeds should be roughly equal to tollway expenditures + debt service.", 
        y = "Dollars",
        color = element_blank() )
+```
 
+
+```{r tollway2}
+#| fig-cap: "Tollway Revenue and Expenditures. Bars in graph represent bond proceeeds revenue."
+#
 ggplot()+
   theme_classic() +
   geom_line(data=alltollway_exp, aes(x=fy, y=expenditure/1000000000, color = "All Tollway Revenue")) +
@@ -305,7 +365,6 @@ ggplot()+
 
 ```
 
-#### 
 
 ```{r}
 all_debt %>%  # all debt does NOT include the tollway expenditures
@@ -322,8 +381,11 @@ all_debt %>%  # all debt does NOT include the tollway expenditures
          subtitle = "Principal and Interest payments", 
          caption = "Capital projects (object 8800) does not include Illinois tollway debt service (fund 0455).
          Tollway debt service is graphed separately.", 
-         color = element_blank()) 
+         color = element_blank())
+```
 
+
+```{r}
 all_debt %>% 
   ggplot() + 
     theme_classic() +
@@ -339,3 +401,104 @@ all_debt %>%
          subtitle = "All Principal and Interest payments", caption = "All principal and interest includes short-term borrowing, GO bonds, and capital projects debt service 
          EXCEPT the Illinois Tollway debt service. Illinois tollway debt service is graphed separately.", color = element_blank()) 
 ```
+
+
+
+### Looking at Bond Proceeds
+
+```{r}
+rev_temp |> filter(rev_type == "72" & fy == 2025) |> 
+  mutate(receipts = receipts / 1000000) |> 
+  select(fund_name_ab, fund, source_name_AWM, receipts, fund_cat_name, agency_name) |> arrange(desc(receipts))
+
+rev_temp |> filter(rev_type == "72" & fy == 2025) |> 
+  summarize(receipts = sum(receipts) / 1000000) 
+
+rev_temp |> filter(rev_type == "72" & fy == 2025) |> select(-c(data_source, fund_ab:activefy2025_rev, amnesty, local, type_assigned))
+```
+
+
+```{r}
+#| tbl-cap: "Look at funds that received bond proceeds."
+
+
+rev_temp |> filter(fy == 2025 & fund %in% c("0101", "0141","0270", "0551", "0553", "0554", "0825", "0959", "0971")) |>  mutate(receipts = round(receipts / 1000000) ) |>  arrange(desc(receipts))  |> select(-c(data_source, fund_ab:activefy2025_rev, amnesty, local, type_assigned))
+```
+
+
+```{r}
+#| tbl-cap: "Looks at receipts in Build Illinois Bond Fund, Build Illinois Fund, and Build Illinois B R & I fund."
+rev_temp |> filter(fy == 2025 & fund %in% c("0960", "0970", "0971")) |>  mutate(receipts = round(receipts / 1000000) ) |>  arrange(desc(receipts)) |> select(-c(data_source, fund_ab:activefy2025_rev, amnesty, local, type_assigned))
+ 
+
+
+```
+
+Bond proceeds ($2.7 billion) went to General Obligation BR&I, Build Illinois Bond, Transportation Bond Series A, Pension Acceleration Bond, Capital Development, Water Revolving, Transportation  Bond Series B, Multimodal Transportation Bond, and Anti-Pollution Funds. 
+
+
+### Expenditure Transfers
+
+```{r}
+#| label: expendituretransfers
+#| tbl-cap: "Expenditures that were transfers."
+
+general_funds <- c("0001", "0005", "0412", "0007", "0640", "0644", "0686")
+
+all_exp <- read_csv(paste0("data/FY", current_year, " Files/allexpfiles_2025.csv")) 
+
+
+all_exp |> filter(agency == 799 & fy == 2025) |> 
+  select(obj_seq_type, expenditure, fund_name, fund, agency, everything()) |> 
+  mutate(expenditure = round(expenditure/1000000)) |> arrange(desc(expenditure)  ) 
+
+all_exp |> filter(agency == 799 & fy == 2025) |> 
+  group_by(obj_seq_type) |> 
+  summarize(expenditure = round(sum(expenditure)/1000000)) |> arrange(desc(expenditure)  )
+```
+```{r}
+all_exp |> filter(agency == 799 & fy == 2025) |> 
+  summarize(trans_out = round(sum(expenditure/1000000)))
+
+all_exp |> filter(agency == 799 & fy == 2025) |> 
+  group_by(fund_name, fund)|>
+  summarize(trans_out = round(expenditure/1000000)) |> arrange(desc(trans_out))
+```
+
+
+```{r}
+#| label: revenuetransfers
+#| tbl-cap: "Transfers into funds"
+
+all_rev <- read_csv(paste0("data/FY", current_year, " Files/allrevfiles_2025.csv")) 
+
+all_rev |> filter(agency == 799 & fy == 2025) |> select(fund_name, receipts,fund_name, fund, everything()) |> mutate(receipts = round(receipts/1000000)) |> arrange(desc(receipts)  )
+
+
+```
+
+```{r}
+all_rev |> filter(agency == 799 & fy == 2025) |> select(fund_name, receipts,fund_name, fund, everything()) |> summarize(trans_in = round(sum(receipts/1000000)))
+```
+
+```{r}
+#| label: tbl-revinto
+#| tbl-cap: "Transfers into General Funds"
+
+all_rev |> filter(agency == 799 & fy == 2025 & fund %in% general_funds) |> select(fund_name, receipts,fund_name, fund, everything()) |> mutate(receipts = round(receipts/1000000)) |> arrange(desc(receipts)  )
+
+```
+
+
+
+```{r}
+#| tbl-cap: "Revenue into Fund 0101 (GO BR&I) and 0141 (Capital Development Fund). In FY2025, GO BR&I got $3.4 billion transfer into fund."
+
+all_rev |> filter(fy == 2025 & fund %in% c("0141", "0101")) |> 
+  select(source, fund_name, receipts,fund_name, fund, everything()) |> mutate(receipts = round(receipts/1000000)) |> arrange(desc(receipts)  )
+```
+
+
+### Move to different page - Transfers of Excess Funds 
+
+Potential process change: Check transfers that have "EXCESS" in them and consider if they should be included or not? 
