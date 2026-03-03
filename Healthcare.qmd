@@ -175,9 +175,10 @@ emp_premium <- employee_health_premiums %>%
   
 
 emp_premium %>% 
-  ggplot(aes(x=fy, y = employee_premiums_sum)) + 
+  ggplot(aes(x=fy, y = employee_premiums_sum/1000000)) + 
   geom_col() + 
-  labs( title = "Employee health insurance premiums")
+  labs( title = "Employee health insurance premiums",
+        y = "Millions $")
 
 
 
@@ -221,9 +222,9 @@ After removing a few of those lines, we are left with the overall cost providing
 # contributions and benefits paid comparison
 ggplot()+
   #  geom_line(data=group_ins, aes(x=fy, y=object1180, color='Group Insurance1')) +
-      geom_line(data=health_insurance_fund_rev, aes(x=fy, y=health_ins_rev, color='Health Insurance Fund - All Revenue')) +
+      geom_line(data=health_insurance_fund_rev, aes(x=fy, y=health_ins_rev/1000000000, color='Health Insurance Fund - All Revenue')) +
 # geom_line(data = emp_premium, aes(x=fy, y = employee_premiums_sum, color = 'Revenue from Employee Premiums')) +
-    geom_line(data=health_ins_reserve, aes(x=fy, y=fund_0907, color='Cost of Provision')) +
+    geom_line(data=health_ins_reserve, aes(x=fy, y=fund_0907/1000000000, color='Cost of Provision')) +
   #  geom_line(data=employer_contributions, aes(x=fy, y=object1180, color='Group Insurance-Object1180')) +
  #   geom_line(data=employer_contributions2, aes(x=fy, y=object1180, color='Employer Contributions-General Fund')) +
   #geom_line(data=group_ins2, aes(x=fy, y=dropped_group_premiums, color='Group Insurance - 1180 & 1900')) +
@@ -241,5 +242,5 @@ ggplot()+
   theme(legend.position="bottom") +
   labs(title="Healthcare costs and health insurance fund revenue", 
        caption = "Healthcare costs and total revenue that flowed into the Health Insurance Fund", 
-       y = "Dollars", x = "" )
+       y = "Billions of Dollars", x = "" )
 ```
