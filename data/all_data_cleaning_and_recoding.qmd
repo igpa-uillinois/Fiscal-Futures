@@ -1,3 +1,13 @@
+---
+title: "Prepping general dataset"
+format:
+  html:
+    toc: true
+    toc-location: left
+    code-fold: true
+    code-tools: true
+---
+
 ```{r warning = FALSE, message=FALSE, echo=FALSE}
 
 library(tidyverse)
@@ -15,12 +25,15 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 ```
 
 ::: {.callout-note appearance="minimal" icon="false"}
+
 ## Budget data with all observations for other researchers
 
-This page describes the creation of `allexp_fy23_recoded_LASTDATEMODIFIED.csv` and `allrev_fy23_recoded_LASTDATEMODIFIED.csv`.
+This page describes the creation of `budget_data_rev.csv` and `budget_data_exp.csv`.
 :::
 
-This code is based on the (Everything.qmd) file used for the website and each years fiscal gap calculation, BUT it doesn't contain as many graphs or descriptions behind the code. It also has been modified slightly so that it DOES NOT drop observations that would normally be removed (e.g. principle payments, statutory transfers, etc.) during the data processing for the Fiscal Futures report. **It was created purely for the purpose of making a dataset that had all the observations received from the comptrollers office, with labels to go with the fund/agency/organization/revenuesource numbers, with non-duplicated fund numbers over time.**
+This code is based on the (Everything.qmd) file used for the website and each years fiscal gap calculation, BUT it doesn't contain as many graphs or descriptions behind the code. It also has been modified slightly so that it DOES NOT drop observations that would normally be removed (e.g. principle payments, statutory transfers, etc.) during the data processing for the Fiscal Futures report.
+
+**It was created purely for the purpose of making a dataset that had all the observations received from the comptrollers office, with labels to go with the fund/agency/organization/revenue source numbers, with non-duplicated fund numbers over time.**
 
 This is a good faith effort to create a publicly available file that is labeled and coded nicely for other researchers. I cannot guarantee the accuracy but it should at least get you started on your task. I will try to do quality checks in the near future to make sure grouping variables are correct and that the binary variables created to indicate transfers, debt, etc. are also reliable. Use at your own risk and read the code closely! - AWM
 
@@ -32,15 +45,9 @@ I tried to keep all observations, add additional variables not included in the r
 
 See `Fiscal-Futures-Topics/code-cleaning.qmd`. 
 
-::: {.callout-important appearance="simple" icon="false"}
-Variable names must be identical to merge files together.
-:::
-
 Data files received include all observations through August 31 of each fiscal year. Data is requested and received after the lapse period closes on October 31.
 
 Code below reads in the csv files in `Fiscal-Futures-Topics/code-cleaning.qmd`   (`rev_temp.csv` and `exp_temp.csv`). These files contain all years of data combined into one file. **It does have funds or agencies tracked consistently over time.**  Do not use this file for summing Fiscal Futures categories because it is just an intermediate step before recoding revenue and expenditure categories using Fiscal Futures methodology.  
-
-{{< include ../code-cleaning.qmd >}}
 
 
 ## Inspecting new FY22 data files
@@ -73,10 +80,11 @@ amnesty_words <- c("AMNESTY")
 # Expenditure & Revenue Categorization
 
 ```{r}
+current_year = 2025
 
-rev_temp <- read_csv(file = paste0("./data/FY", current_year, " Files/rev_temp.csv"))
+rev_temp <- read_csv(file = paste0("FY", current_year, " Files/rev_temp.csv"))
 
-exp_temp<- read_csv(file = paste0("./data/FY", current_year, " Files/exp_temp.csv"))
+exp_temp<- read_csv(file = paste0("FY", current_year, " Files/exp_temp.csv"))
 ```
 
 ## Modify Expenditure File
@@ -107,6 +115,7 @@ tax_refund_long <- exp_temp %>%           # fund != "0401" # removes State Trust
 exp_temp <- left_join(exp_temp, tax_refund_long) %>%
   mutate(refund = ifelse(is.na(refund),"not refund", as.character(refund)))
 
+exp_temp <- exp_temp |> mutate(drop_reason = ifelse(!is.na(refund), "Refund", drop_reason))
 
 # Normally these are dropped from expenditures for Fiscal Gap calculation
 # exp_temp <- exp_temp %>% filter(refund == "Not refund")
@@ -118,14 +127,10 @@ exp_temp <- left_join(exp_temp, tax_refund_long) %>%
 
 
 ```{r}
-knitr::read_chunk("path/to/_helpers.qmd")
-```
-```{r chunk-a, ref.label=c('chunk-c', 'chunk-b')}
-# The code from chunk c and chunk b will appear here in the rendered output
+#knitr::read_chunk("path/to/_helpers.qmd")
 ```
 
-
-See @sec-pensions for additional context.
+See [Pensions section](Fiscal-Future-Topics/pensioms.qmd) for additional context.
 
 
 
@@ -133,35 +138,29 @@ Create indicator variable for if expenditure item is a pension expenditure.
 
 ```{r pensions}
 
-pension_check <- exp_temp %>% 
+
+# funds related to pension contributions
+pension_funds <- c("0472", "0473", "0477", "0479", "0481", "0755", "0786", "0787", "0788", "0789", "0799")
+
+exp_temp <- exp_temp %>% 
   
   mutate(
     pension = ifelse(object %in% c("4430","4431", "1159", "1160", 
                                    "1161", "1162", "1163","1164",
                                    "1165", "1166"), TRUE, FALSE),
-  
-    pension_label = case_when( 
-    # object == "4430" & fund == "0825" ~ "Object 4430 - Pension Buyout/Benefits Paid Early",
-    (object=="4430") ~ "Object 4430 - Benefits Paid to \nEmployees; EXCLUDED", # pensions, annuities, benefits
-    (object=="4431") ~ "Object 4431 - State Contributions; INCLUDED", # 4431 = state payments into pension fund
-    (obj_seq_type > "11590000" & obj_seq_type < "11660000")  ~ "Object 1160-1165 Employer Contributions \nto Pension Fund; INCLUDED",
-    # objects 1159 to 1166 are all considered Retirement by Comptroller 
     
-    TRUE ~ "0")) %>%  # All other observations coded as 0 for non-pension items
-  
-  # recodes specific instances of code anomalies from past years:
-  mutate(pension = case_when(
-    (object=="1298" & fund %in% pension_funds ) ~ "Object 1298 - Purchase of Investments; DROPPED", 
-    # pension stabilization fund in 2022 
-    # object == "1900" & fund == "0319" ~ "Fund 0319-Pension Stabilization", 
-    object == "1900" & fund %in% pension_funds ~ "Fund 0319 - Pension Stabilization", 
+    drop_reason = ifelse( 
+      (object=="4430"), 
+      "Benefits Paid to Employees", # pensions, annuities, benefits
+      drop_reason), 
     
+    pension = ifelse(
+      (object=="4431") | # "Object 4431 - State Contributions; INCLUDED", # 4431 = state payments into pension fund
+    (obj_seq_type > "11590000" & obj_seq_type < "11660000") |  #~ "Object 1160-1165 Employer Contributions into Pension Fund; INCLUDED",     # objects 1159 to 1166 are all considered Retirement by Comptroller 
+(object == "4900" & fund %in% pension_funds) | # "Object 4900 - Awards/Grants; Weird 2010-2011 values" 
+(object == "1900" & fund %in% pension_funds),  #  Fund 0319 - Pension Stabilization fund in 2022
     
-    object == "4900" & fund %in% pension_funds ~ "Object 4900 - Awards/Grants; Weird 2010-2011 values",
-    
-    TRUE ~ as.character(pension)) ) %>% 
-  filter(pension != "0" )
-
+    TRUE, FALSE))
 ```
 
 ```{r pensions-POB}
@@ -170,18 +169,12 @@ pension_check <- exp_temp %>%
 
 exp_temp <- exp_temp %>% 
   # change object for 2010 and 2011, retirement expenditures were bond proceeds and would have been excluded
-  mutate(object = ifelse((pension >0 & in_ff == "0"), "4431", object)) %>% 
+  mutate(object = ifelse((pension ==TRUE & in_ff == "0"), "4431", object)) %>% 
   # changes weird teacher & judge retirement system  pensions object to normal pension object 4431
-  mutate(pension =  ifelse(pension >0 & in_ff == "0", 6, pension)) %>% # coded as 6 if it was supposed to be excluded. 
-  mutate(in_ff = ifelse(pension>0, "1", in_ff))
+  mutate(pension =  ifelse(pension ==TRUE & in_ff == "0", TRUE, pension)) %>% # coded as 6 if it was supposed to be excluded. 
+  mutate(in_ff = ifelse(pension==TRUE, "1", in_ff))
 
 table(exp_temp$pension) 
-
-
-# all other pensions objects  codes get agency code 901 for State Pension Contributions
-exp_temp <- exp_temp %>% 
-  mutate(agency = ifelse(pension>0, "901", as.character(agency)),
-         agency_name = ifelse(agency == "901", "State Pension Contributions", as.character(agency_name)))
 
 
 ```
@@ -206,11 +199,12 @@ These items are dropped in the fiscal futures model. They have been left in for 
 
 
 exp_temp <- exp_temp %>% 
-  mutate(drop_reason = ifelse(
-    agency == "799" |             # statutory transfers
-      object == "1993" |  # interfund cash transfers
-      object == "1298",  # purchase of investments
-    "Transfers", drop_reason) )
+  mutate(
+    drop_reason = case_when(
+      agency == "799" ~ "Statutory Transfers",      # statutory transfers
+      object == "1993"  ~ "Interfund Transfers",    # interfund cash transfers
+      object == "1298" ~ "Purchase of Investments", # purchase of investments
+      TRUE ~ drop_reason) )
 
 ```
 
@@ -254,17 +248,17 @@ exp_temp <- exp_temp %>%
 # State employee healthcare indicator   
 exp_temp <- exp_temp |>
  # turns specific items into State Employee Healthcare 
-  mutate(fiscal_future_cat = 
+  mutate(group_label = 
     ifelse(
        # central management Bureau of benefits using health insurance reserve 
       (fund=="0907" & (agency=="416" & appr_org=="20")) |  
          
       # agency = 478: healthcare & family services using health insurance reserve - ioc stopped using this in 2012
-     ( fund=="0907" & (agency=="478" & appr_org=="80") ), "State Employee Healthcare", fiscal_future_cat),
+     ( fund=="0907" & (agency=="478" & appr_org=="80") ), "State Employee Healthcare", agency_name),
     
     # still assign fiscal future category like we normally do in the group variable
     # defaults to agency code until manually recoded
-    group = ifelse(fiscal_future_cat == "State Employee Healthcare", "904", as.character(agency)) )
+    group = ifelse(group_label == "State Employee Healthcare", "904", as.character(agency)) )
 
 
 
@@ -287,30 +281,32 @@ The six corresponding revenue items are:
 ```{r transfers-to-local}
 exp_temp <- exp_temp %>% 
   mutate(
-  fiscal_future_cat = case_when(fund=="0515" & object=="4470" & type=="08" ~ "971", # income tax to local governments
-                     fund=="0515" & object=="4491" & type=="08" & sequence=="00" ~ "971", # object is shared revenue payments
-                     fund=="0802" & object=="4491" ~ "972", #pprt transfer
-                     fund=="0515" & object=="4491" & type=="08" & sequence=="01" ~ "976", #gst to local
-                     fund=="0627" & object=="4472"~ "976" , # public transportation fund but no observations exist
-                     fund=="0648" & object=="4472" ~ "976", # downstate public transportation, but doesn't exist
-                     fund=="0515" & object=="4470" & type=="00" ~ "976", # object 4470 is grants to local governments
-                    object=="4491" & (fund=="0188"|fund=="0189") ~ "976",
-                     fund=="0187" & object=="4470" ~ "976",
-                     fund=="0186" & object=="4470" ~ "976",
-                    object=="4491" & (fund=="0413"|fund=="0414"|fund=="0415")  ~ "975", #mft to local
-                  fund == "0952"~ "975", # Added Sept 29 2022 AWM. Transportation Renewal MFT
-                    TRUE ~ as.character(fiscal_future_cat)),
-  
- group = case_when(fiscal_future_cat == "971"~ "INCOME TAX 1/10 TO LOCAL",
-                          fiscal_future_cat == "972" ~ "PPRT TRANSFER TO LOCAL",
-                          fiscal_future_cat == "975" ~ "MFT TO LOCAL",
-                          fiscal_future_cat == "976" ~ "GST TO LOCAL",
-                          TRUE~as.character(group)),
-  group = ifelse(agency > "970" & agency < "977", as.character(fiscal_future_cat), as.character(group))) |>
-  
-  
-  # local transfers are normally dropped, but documenting them in drop_reason
-  mutate(drop_reason = ifelse(agency > "970" & agency < "977", "Local Transfers", as.character(drop_reason)))
+    group = case_when(
+      fund=="0515" & object=="4470" & type=="08" ~ "971", # income tax to local governments
+      fund=="0515" & object=="4491" & type=="08" & sequence=="00" ~ "971", # object is shared revenue payments
+      fund=="0802" & object=="4491" ~ "972", #pprt transfer
+      fund=="0515" & object=="4491" & type=="08" & sequence=="01" ~ "976", #gst to local
+      fund=="0627" & object=="4472"~ "976" , # public transportation fund but no observations exist
+      fund=="0648" & object=="4472" ~ "976", # downstate public transportation, but doesn't exist
+      fund=="0515" & object=="4470" & type=="00" ~ "976", # object 4470 is grants to local governments
+      object=="4491" & (fund=="0188"|fund=="0189") ~ "976",
+      fund=="0187" & object=="4470" ~ "976",
+      fund=="0186" & object=="4470" ~ "976",
+      object=="4491" & (fund=="0413"|fund=="0414"|fund=="0415")  ~ "975", #mft to local
+      fund == "0952"~ "975", # Added Sept 29 2022 AWM. Transportation Renewal MFT
+      TRUE ~ as.character(group)),
+    
+    group_label = 
+      case_when(
+        group == "971"~ "INCOME TAX 1/10 TO LOCAL",
+        group == "972" ~ "PPRT TRANSFER TO LOCAL",
+        group == "975" ~ "MFT TO LOCAL",
+        group == "976" ~ "GST TO LOCAL",
+        TRUE~as.character(group_label)) )|>
+      
+      
+      # local transfers are normally dropped, but documenting them in drop_reason
+      mutate(drop_reason = ifelse(group > "970" & group < "977", "Local Transfers", as.character(drop_reason)))
 
 ```
 
@@ -329,9 +325,7 @@ exp_temp <- exp_temp |>
 
 Debt Service expenditures include interest payment on both short-term and long-term debt. We do not include escrow or principal payments.
 
-::: {.callout-note appearance="minimal" icon="false"}
-Commented out both of these lines in chunk below: `exp_temp <- anti_join(exp_temp, debt_drop)` and `exp_temp <- anti_join(exp_temp, debt_keep)`
-:::
+
 
 ```{r debt-service}
 # keeping obs for other researchers.
@@ -528,17 +522,18 @@ rev_temp <- rev_temp |>
            case_when(
              fund_cat_name == "General Fund" ~ "General Funds",
              fund_cat_name == "REVOLVING FUNDS" ~ "Revolving Funds",
-             T ~ fund_cat_name
+             TRUE ~ fund_cat_name
            ))
 ```
 
 #### Federal Transfers
 
 ```{r}
-#| label: fig-create-rev-federal-transfers
+#| label: create-rev-federal-transfers
 
 rev_temp <- rev_temp |> 
-  mutate(drop_reason == ifelse(in_ff == 0, "Excluded Fund", drop_reason))
+  mutate(drop_reason = ifelse(in_ff == "0", 
+                               "Excluded Fund", NA))
 
 rev_temp <- rev_temp |> 
   mutate(
@@ -563,7 +558,8 @@ See [Healthcare](../../Healthcare.qmd) for additional details.
 #collect optional insurance premiums to fund 0907 for use in eehc expenditure  
 rev_temp <- rev_temp |> 
   mutate(
-    drop_reason = ifelse(fund=="0907" & (source=="0120"| source=="0121"| (source>"0345" & source<"0357")|(source>"2199" & source<"2209")), "Employee Premiums", drop_reason))
+    drop_reason = ifelse(
+      fund=="0907" & (source=="0120"| source=="0121"| (source>"0345" & source<"0357")|(source>"2199" & source<"2209")), "Employee Premiums", drop_reason))
 ```
 
 
@@ -588,26 +584,6 @@ Funds that hold and disperse local taxes or fees are dropped from the analysis. 
 
 Drops Blank, Student Fees, Retirement contributions, proceeds/investments, bond issue proceeds, interagency receipts, cook IGT, Prior year refunds:
 
-```{r}
-
-rev_temp <- rev_temp |> 
-  mutate(drop_reason = ifelse(is.na(local), "Local", drop_reason)) 
-
-# 1175 doesnt exist?
-in_from_out <- c("0847", "0867", "1175", "1176", "1177", "1178", "1181", "1182", "1582", "1592", "1745", "1982", "2174", "2264")
-
-# what does this actually include:
-# all are items with rev_type = 75 originally. 
-rev_temp <- rev_temp |>
-  mutate(drop_reason = ifelse(source %in% in_from_out, "in_from_out", drop_type)) 
-
-
-# creates rev_type_new that is used in later chunks
-rev_temp <- rev_temp |> 
-   mutate(rev_type_new = ifelse(source %in% in_from_out, "76", rev_type))
-
-
-```
 
 Revenue Categories NOT included in Fiscal Futures:\
 
@@ -632,7 +608,7 @@ drop_type <- c("32", "45", "51",
 # bond issue proceeds, interagency receipts, cook IGT, Prior year refunds.
 
 rev_temp <- rev_temp |> 
-  mutate(drop_reason = ifelse(rev_type_new %in% drop_type, "Dropped Category", drop_reason))
+  mutate(drop_reason = ifelse(rev_type %in% drop_type, "Dropped Category", drop_reason))
 ```
 
 All expenditures recoded but not aggregated: Allows for inspection of individual expenditures within larger categories. This stage of the data is extremely useful for any researcher interested in Illinois fiscal health. This version of data produced by this file still includes observations that would normally be dropped.
@@ -641,38 +617,27 @@ This was created in an attempt to help other researchers have the most complete 
 
 
 
-```{r, warning = FALSE, message=FALSE}
-# fund info to revenue for all years
-rev_temp <- inner_join(rev_1998_2023, funds_ab_in_2023, by = "fund") %>% arrange(source)
-
-# need to update the ioc_source_type file every year! 
-ioc_source_type <- readxl::read_xlsx("ioc_source_updated23_AWM.xlsx")
-
-rev_temp <- left_join(rev_temp, ioc_source_type, by = "source")
-# automatically used source, source name does not match for the join to work using source_name
-
-
-
-# recodes old agency numbers to consistent agency number
-rev_temp <- rev_temp %>% 
-  mutate(agency = case_when(
-    (agency=="438"| agency=="475" |agency == "505") ~ "440",
-    # financial institution &  professional regulation &
-     # banks and real estate  --> coded as  financial and professional reg
-    agency == "473" ~ "588", # nuclear safety moved into IEMA
-    (agency =="531" | agency =="577") ~ "532", # coded as EPA
-    (agency =="556" | agency == "538") ~ "406", # coded as agriculture
-    agency == "560" ~ "592", # IL finance authority (fire trucks and agriculture stuff)to state fire marshal
-    agency == "570" & fund == "0011" ~ "494",   # city of Chicago road fund to transportation
-    TRUE ~ (as.character(agency)))) 
-```
-
-
 ```{r write-csvs}
-write.csv(exp_temp, "../data/budget_data_expenditures.csv")
-write.csv(rev_temp, "../data/budget_data_revenue.csv")
+exp_temp <- exp_temp |> select(-c(data_source, activefy2025, activefy2025_rev, refund, year, federal_funded)) |> filter(expenditure > 0)
+
+write.csv(exp_temp, "budget_data_expenditures.csv")
+
+
+
+rev_temp <- rev_temp |> select(-c(activefy2025, activefy2025_rev, type_assigned))
+write.csv(rev_temp, "budget_data_revenue.csv")
 ```
 
 
 
-> To do: add group labels to go with group numbers. That was done after aggregating and pivoting in the normal version of the code.
+# Check data tables
+
+```{r}
+DT::datatable(exp_temp, rownames = FALSE)
+```
+
+
+```{r}
+DT::datatable(rev_temp, rownames=FALSE)
+```
+
