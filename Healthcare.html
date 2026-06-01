@@ -611,9 +611,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>emp_premium <span class="sc">%&gt;%</span> </span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y =</span> employee_premiums_sum)) <span class="sc">+</span> </span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y =</span> employee_premiums_sum<span class="sc">/</span><span class="dv">1000000</span>)) <span class="sc">+</span> </span>
 <span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>() <span class="sc">+</span> </span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>( <span class="at">title =</span> <span class="st">"Employee health insurance premiums"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>( <span class="at">title =</span> <span class="st">"Employee health insurance premiums"</span>,</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">y =</span> <span class="st">"Millions $"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -667,9 +668,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># contributions and benefits paid comparison</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>()<span class="sc">+</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  geom_line(data=group_ins, aes(x=fy, y=object1180, color='Group Insurance1')) +</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="at">data=</span>health_insurance_fund_rev, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>health_ins_rev, <span class="at">color=</span><span class="st">'Health Insurance Fund - All Revenue'</span>)) <span class="sc">+</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="at">data=</span>health_insurance_fund_rev, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>health_ins_rev<span class="sc">/</span><span class="dv">1000000000</span>, <span class="at">color=</span><span class="st">'Health Insurance Fund - All Revenue'</span>)) <span class="sc">+</span></span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># geom_line(data = emp_premium, aes(x=fy, y = employee_premiums_sum, color = 'Revenue from Employee Premiums')) +</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">data=</span>health_ins_reserve, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>fund_0907, <span class="at">color=</span><span class="st">'Cost of Provision'</span>)) <span class="sc">+</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">data=</span>health_ins_reserve, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>fund_0907<span class="sc">/</span><span class="dv">1000000000</span>, <span class="at">color=</span><span class="st">'Cost of Provision'</span>)) <span class="sc">+</span></span>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  geom_line(data=employer_contributions, aes(x=fy, y=object1180, color='Group Insurance-Object1180')) +</span></span>
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a> <span class="co">#   geom_line(data=employer_contributions2, aes(x=fy, y=object1180, color='Employer Contributions-General Fund')) +</span></span>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line(data=group_ins2, aes(x=fy, y=dropped_group_premiums, color='Group Insurance - 1180 &amp; 1900')) +</span></span>
@@ -687,7 +688,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"bottom"</span>) <span class="sc">+</span></span>
 <span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Healthcare costs and health insurance fund revenue"</span>, </span>
 <span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Healthcare costs and total revenue that flowed into the Health Insurance Fund"</span>, </span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Dollars"</span>, <span class="at">x =</span> <span class="st">""</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Billions of Dollars"</span>, <span class="at">x =</span> <span class="st">""</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1331,73 +1332,74 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb10-175"><a href="#cb10-175" aria-hidden="true" tabindex="-1"></a><span class="in">  </span></span>
 <span id="cb10-176"><a href="#cb10-176" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-177"><a href="#cb10-177" aria-hidden="true" tabindex="-1"></a><span class="in">emp_premium %&gt;% </span></span>
-<span id="cb10-178"><a href="#cb10-178" aria-hidden="true" tabindex="-1"></a><span class="in">  ggplot(aes(x=fy, y = employee_premiums_sum)) + </span></span>
+<span id="cb10-178"><a href="#cb10-178" aria-hidden="true" tabindex="-1"></a><span class="in">  ggplot(aes(x=fy, y = employee_premiums_sum/1000000)) + </span></span>
 <span id="cb10-179"><a href="#cb10-179" aria-hidden="true" tabindex="-1"></a><span class="in">  geom_col() + </span></span>
-<span id="cb10-180"><a href="#cb10-180" aria-hidden="true" tabindex="-1"></a><span class="in">  labs( title = "Employee health insurance premiums")</span></span>
-<span id="cb10-181"><a href="#cb10-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-180"><a href="#cb10-180" aria-hidden="true" tabindex="-1"></a><span class="in">  labs( title = "Employee health insurance premiums",</span></span>
+<span id="cb10-181"><a href="#cb10-181" aria-hidden="true" tabindex="-1"></a><span class="in">        y = "Millions $")</span></span>
 <span id="cb10-182"><a href="#cb10-182" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-183"><a href="#cb10-183" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-184"><a href="#cb10-184" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-185"><a href="#cb10-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-188"><a href="#cb10-188" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb10-189"><a href="#cb10-189" aria-hidden="true" tabindex="-1"></a><span class="co"># contributions and benefits paid comparison</span></span>
-<span id="cb10-190"><a href="#cb10-190" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>()<span class="sc">+</span></span>
-<span id="cb10-191"><a href="#cb10-191" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  geom_line(data=group_ins, aes(x=fy, y=object1180, color='Group Insurance1')) +</span></span>
-<span id="cb10-192"><a href="#cb10-192" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="at">data=</span>health_insurance_fund_rev, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>health_ins_rev, <span class="at">color=</span><span class="st">'Health Insurance Fund - All Revenue'</span>)) <span class="sc">+</span></span>
-<span id="cb10-193"><a href="#cb10-193" aria-hidden="true" tabindex="-1"></a> <span class="fu">geom_line</span>(<span class="at">data =</span> emp_premium, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y =</span> employee_premiums_sum, <span class="at">color =</span> <span class="st">'Revenue from Employee Premiums'</span>)) <span class="sc">+</span></span>
-<span id="cb10-194"><a href="#cb10-194" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">data=</span>health_ins_reserve, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>fund_0907, <span class="at">color=</span><span class="st">'Cost of Provision'</span>)) <span class="sc">+</span></span>
-<span id="cb10-195"><a href="#cb10-195" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">data=</span>employer_contributions, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>object1180, <span class="at">color=</span><span class="st">'Group Insurance-Object1180'</span>)) <span class="sc">+</span></span>
-<span id="cb10-196"><a href="#cb10-196" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-197"><a href="#cb10-197" aria-hidden="true" tabindex="-1"></a> <span class="co">#   geom_line(data=employer_contributions2, aes(x=fy, y=object1180, color='Employer Contributions-General Fund')) +</span></span>
-<span id="cb10-198"><a href="#cb10-198" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data=</span>group_ins2, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>dropped_group_premiums, <span class="at">color=</span><span class="st">'Group Insurance - 1180 &amp; 1900'</span>)) <span class="sc">+</span></span>
-<span id="cb10-199"><a href="#cb10-199" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-200"><a href="#cb10-200" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line(data= healthcare_costs, aes(x=fy, y = cost_of_provision, color = 'Healthcare Costs'))+ </span></span>
-<span id="cb10-201"><a href="#cb10-201" aria-hidden="true" tabindex="-1"></a><span class="fu">guides</span>(<span class="at">fill=</span><span class="fu">guide_legend</span>(<span class="at">nrow=</span><span class="dv">2</span>,<span class="at">byrow=</span><span class="cn">TRUE</span>))<span class="sc">+</span></span>
-<span id="cb10-202"><a href="#cb10-202" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(</span>
-<span id="cb10-203"><a href="#cb10-203" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Cost of Provision'</span> <span class="ot">=</span> <span class="st">'darkblue'</span>,</span>
-<span id="cb10-204"><a href="#cb10-204" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Health Insurance Fund - All Revenue'</span> <span class="ot">=</span> <span class="st">'light green'</span>,</span>
-<span id="cb10-205"><a href="#cb10-205" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Revenue from Employee Premiums'</span> <span class="ot">=</span> <span class="st">'dark green'</span>,</span>
-<span id="cb10-206"><a href="#cb10-206" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Group Insurance - 1180 &amp; 1900'</span> <span class="ot">=</span> <span class="st">'blue'</span>,</span>
-<span id="cb10-207"><a href="#cb10-207" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Group Insurance-Object1180'</span> <span class="ot">=</span> <span class="st">'light blue'</span></span>
-<span id="cb10-208"><a href="#cb10-208" aria-hidden="true" tabindex="-1"></a>   <span class="co">#     'Employer Contributions-General Fund' = 'light blue'</span></span>
-<span id="cb10-209"><a href="#cb10-209" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
-<span id="cb10-210"><a href="#cb10-210" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"bottom"</span>) <span class="sc">+</span></span>
-<span id="cb10-211"><a href="#cb10-211" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Healthcare costs and group insurance contributions"</span>, </span>
-<span id="cb10-212"><a href="#cb10-212" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Healthcare costs and group insurance contributions"</span>, </span>
-<span id="cb10-213"><a href="#cb10-213" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Dollars"</span>, <span class="at">x =</span> <span class="st">""</span>)</span>
-<span id="cb10-214"><a href="#cb10-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-184"><a href="#cb10-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-185"><a href="#cb10-185" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-186"><a href="#cb10-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-189"><a href="#cb10-189" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb10-190"><a href="#cb10-190" aria-hidden="true" tabindex="-1"></a><span class="co"># contributions and benefits paid comparison</span></span>
+<span id="cb10-191"><a href="#cb10-191" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>()<span class="sc">+</span></span>
+<span id="cb10-192"><a href="#cb10-192" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  geom_line(data=group_ins, aes(x=fy, y=object1180, color='Group Insurance1')) +</span></span>
+<span id="cb10-193"><a href="#cb10-193" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="at">data=</span>health_insurance_fund_rev, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>health_ins_rev, <span class="at">color=</span><span class="st">'Health Insurance Fund - All Revenue'</span>)) <span class="sc">+</span></span>
+<span id="cb10-194"><a href="#cb10-194" aria-hidden="true" tabindex="-1"></a> <span class="fu">geom_line</span>(<span class="at">data =</span> emp_premium, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y =</span> employee_premiums_sum, <span class="at">color =</span> <span class="st">'Revenue from Employee Premiums'</span>)) <span class="sc">+</span></span>
+<span id="cb10-195"><a href="#cb10-195" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">data=</span>health_ins_reserve, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>fund_0907, <span class="at">color=</span><span class="st">'Cost of Provision'</span>)) <span class="sc">+</span></span>
+<span id="cb10-196"><a href="#cb10-196" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">data=</span>employer_contributions, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>object1180, <span class="at">color=</span><span class="st">'Group Insurance-Object1180'</span>)) <span class="sc">+</span></span>
+<span id="cb10-197"><a href="#cb10-197" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-198"><a href="#cb10-198" aria-hidden="true" tabindex="-1"></a> <span class="co">#   geom_line(data=employer_contributions2, aes(x=fy, y=object1180, color='Employer Contributions-General Fund')) +</span></span>
+<span id="cb10-199"><a href="#cb10-199" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data=</span>group_ins2, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>dropped_group_premiums, <span class="at">color=</span><span class="st">'Group Insurance - 1180 &amp; 1900'</span>)) <span class="sc">+</span></span>
+<span id="cb10-200"><a href="#cb10-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-201"><a href="#cb10-201" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line(data= healthcare_costs, aes(x=fy, y = cost_of_provision, color = 'Healthcare Costs'))+ </span></span>
+<span id="cb10-202"><a href="#cb10-202" aria-hidden="true" tabindex="-1"></a><span class="fu">guides</span>(<span class="at">fill=</span><span class="fu">guide_legend</span>(<span class="at">nrow=</span><span class="dv">2</span>,<span class="at">byrow=</span><span class="cn">TRUE</span>))<span class="sc">+</span></span>
+<span id="cb10-203"><a href="#cb10-203" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(</span>
+<span id="cb10-204"><a href="#cb10-204" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Cost of Provision'</span> <span class="ot">=</span> <span class="st">'darkblue'</span>,</span>
+<span id="cb10-205"><a href="#cb10-205" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Health Insurance Fund - All Revenue'</span> <span class="ot">=</span> <span class="st">'light green'</span>,</span>
+<span id="cb10-206"><a href="#cb10-206" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Revenue from Employee Premiums'</span> <span class="ot">=</span> <span class="st">'dark green'</span>,</span>
+<span id="cb10-207"><a href="#cb10-207" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Group Insurance - 1180 &amp; 1900'</span> <span class="ot">=</span> <span class="st">'blue'</span>,</span>
+<span id="cb10-208"><a href="#cb10-208" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Group Insurance-Object1180'</span> <span class="ot">=</span> <span class="st">'light blue'</span></span>
+<span id="cb10-209"><a href="#cb10-209" aria-hidden="true" tabindex="-1"></a>   <span class="co">#     'Employer Contributions-General Fund' = 'light blue'</span></span>
+<span id="cb10-210"><a href="#cb10-210" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
+<span id="cb10-211"><a href="#cb10-211" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"bottom"</span>) <span class="sc">+</span></span>
+<span id="cb10-212"><a href="#cb10-212" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Healthcare costs and group insurance contributions"</span>, </span>
+<span id="cb10-213"><a href="#cb10-213" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Healthcare costs and group insurance contributions"</span>, </span>
+<span id="cb10-214"><a href="#cb10-214" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Dollars"</span>, <span class="at">x =</span> <span class="st">""</span>)</span>
 <span id="cb10-215"><a href="#cb10-215" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-216"><a href="#cb10-216" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-217"><a href="#cb10-217" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb10-218"><a href="#cb10-218" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-219"><a href="#cb10-219" aria-hidden="true" tabindex="-1"></a>After removing a few of those lines, we are left with the overall cost providing healthcare and the total amount of money that flows into the Health Insurance Fund.</span>
-<span id="cb10-220"><a href="#cb10-220" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-223"><a href="#cb10-223" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb10-224"><a href="#cb10-224" aria-hidden="true" tabindex="-1"></a><span class="co"># contributions and benefits paid comparison</span></span>
-<span id="cb10-225"><a href="#cb10-225" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>()<span class="sc">+</span></span>
-<span id="cb10-226"><a href="#cb10-226" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  geom_line(data=group_ins, aes(x=fy, y=object1180, color='Group Insurance1')) +</span></span>
-<span id="cb10-227"><a href="#cb10-227" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="at">data=</span>health_insurance_fund_rev, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>health_ins_rev, <span class="at">color=</span><span class="st">'Health Insurance Fund - All Revenue'</span>)) <span class="sc">+</span></span>
-<span id="cb10-228"><a href="#cb10-228" aria-hidden="true" tabindex="-1"></a><span class="co"># geom_line(data = emp_premium, aes(x=fy, y = employee_premiums_sum, color = 'Revenue from Employee Premiums')) +</span></span>
-<span id="cb10-229"><a href="#cb10-229" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">data=</span>health_ins_reserve, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>fund_0907, <span class="at">color=</span><span class="st">'Cost of Provision'</span>)) <span class="sc">+</span></span>
-<span id="cb10-230"><a href="#cb10-230" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  geom_line(data=employer_contributions, aes(x=fy, y=object1180, color='Group Insurance-Object1180')) +</span></span>
-<span id="cb10-231"><a href="#cb10-231" aria-hidden="true" tabindex="-1"></a> <span class="co">#   geom_line(data=employer_contributions2, aes(x=fy, y=object1180, color='Employer Contributions-General Fund')) +</span></span>
-<span id="cb10-232"><a href="#cb10-232" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line(data=group_ins2, aes(x=fy, y=dropped_group_premiums, color='Group Insurance - 1180 &amp; 1900')) +</span></span>
-<span id="cb10-233"><a href="#cb10-233" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-234"><a href="#cb10-234" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line(data= healthcare_costs, aes(x=fy, y = cost_of_provision, color = 'Healthcare Costs'))+ </span></span>
-<span id="cb10-235"><a href="#cb10-235" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-236"><a href="#cb10-236" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(</span>
-<span id="cb10-237"><a href="#cb10-237" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Cost of Provision'</span> <span class="ot">=</span> <span class="st">'darkblue'</span>,</span>
-<span id="cb10-238"><a href="#cb10-238" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Health Insurance Fund - All Revenue'</span> <span class="ot">=</span> <span class="st">'light green'</span></span>
-<span id="cb10-239"><a href="#cb10-239" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  'Revenue from Employee Premiums' = 'dark green',</span></span>
-<span id="cb10-240"><a href="#cb10-240" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  'Group Insurance - 1180 &amp; 1900' = 'blue',</span></span>
-<span id="cb10-241"><a href="#cb10-241" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  'Group Insurance-Object1180' = 'light blue'</span></span>
-<span id="cb10-242"><a href="#cb10-242" aria-hidden="true" tabindex="-1"></a>   <span class="co">#     'Employer Contributions-General Fund' = 'light blue'</span></span>
-<span id="cb10-243"><a href="#cb10-243" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
-<span id="cb10-244"><a href="#cb10-244" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"bottom"</span>) <span class="sc">+</span></span>
-<span id="cb10-245"><a href="#cb10-245" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Healthcare costs and health insurance fund revenue"</span>, </span>
-<span id="cb10-246"><a href="#cb10-246" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Healthcare costs and total revenue that flowed into the Health Insurance Fund"</span>, </span>
-<span id="cb10-247"><a href="#cb10-247" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Dollars"</span>, <span class="at">x =</span> <span class="st">""</span> )</span>
-<span id="cb10-248"><a href="#cb10-248" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-217"><a href="#cb10-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-218"><a href="#cb10-218" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb10-219"><a href="#cb10-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-220"><a href="#cb10-220" aria-hidden="true" tabindex="-1"></a>After removing a few of those lines, we are left with the overall cost providing healthcare and the total amount of money that flows into the Health Insurance Fund.</span>
+<span id="cb10-221"><a href="#cb10-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-224"><a href="#cb10-224" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb10-225"><a href="#cb10-225" aria-hidden="true" tabindex="-1"></a><span class="co"># contributions and benefits paid comparison</span></span>
+<span id="cb10-226"><a href="#cb10-226" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>()<span class="sc">+</span></span>
+<span id="cb10-227"><a href="#cb10-227" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  geom_line(data=group_ins, aes(x=fy, y=object1180, color='Group Insurance1')) +</span></span>
+<span id="cb10-228"><a href="#cb10-228" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="at">data=</span>health_insurance_fund_rev, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>health_ins_rev<span class="sc">/</span><span class="dv">1000000000</span>, <span class="at">color=</span><span class="st">'Health Insurance Fund - All Revenue'</span>)) <span class="sc">+</span></span>
+<span id="cb10-229"><a href="#cb10-229" aria-hidden="true" tabindex="-1"></a><span class="co"># geom_line(data = emp_premium, aes(x=fy, y = employee_premiums_sum, color = 'Revenue from Employee Premiums')) +</span></span>
+<span id="cb10-230"><a href="#cb10-230" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">data=</span>health_ins_reserve, <span class="fu">aes</span>(<span class="at">x=</span>fy, <span class="at">y=</span>fund_0907<span class="sc">/</span><span class="dv">1000000000</span>, <span class="at">color=</span><span class="st">'Cost of Provision'</span>)) <span class="sc">+</span></span>
+<span id="cb10-231"><a href="#cb10-231" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  geom_line(data=employer_contributions, aes(x=fy, y=object1180, color='Group Insurance-Object1180')) +</span></span>
+<span id="cb10-232"><a href="#cb10-232" aria-hidden="true" tabindex="-1"></a> <span class="co">#   geom_line(data=employer_contributions2, aes(x=fy, y=object1180, color='Employer Contributions-General Fund')) +</span></span>
+<span id="cb10-233"><a href="#cb10-233" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line(data=group_ins2, aes(x=fy, y=dropped_group_premiums, color='Group Insurance - 1180 &amp; 1900')) +</span></span>
+<span id="cb10-234"><a href="#cb10-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-235"><a href="#cb10-235" aria-hidden="true" tabindex="-1"></a>  <span class="co">#geom_line(data= healthcare_costs, aes(x=fy, y = cost_of_provision, color = 'Healthcare Costs'))+ </span></span>
+<span id="cb10-236"><a href="#cb10-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-237"><a href="#cb10-237" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(</span>
+<span id="cb10-238"><a href="#cb10-238" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Cost of Provision'</span> <span class="ot">=</span> <span class="st">'darkblue'</span>,</span>
+<span id="cb10-239"><a href="#cb10-239" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Health Insurance Fund - All Revenue'</span> <span class="ot">=</span> <span class="st">'light green'</span></span>
+<span id="cb10-240"><a href="#cb10-240" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  'Revenue from Employee Premiums' = 'dark green',</span></span>
+<span id="cb10-241"><a href="#cb10-241" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  'Group Insurance - 1180 &amp; 1900' = 'blue',</span></span>
+<span id="cb10-242"><a href="#cb10-242" aria-hidden="true" tabindex="-1"></a>  <span class="co">#  'Group Insurance-Object1180' = 'light blue'</span></span>
+<span id="cb10-243"><a href="#cb10-243" aria-hidden="true" tabindex="-1"></a>   <span class="co">#     'Employer Contributions-General Fund' = 'light blue'</span></span>
+<span id="cb10-244"><a href="#cb10-244" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
+<span id="cb10-245"><a href="#cb10-245" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"bottom"</span>) <span class="sc">+</span></span>
+<span id="cb10-246"><a href="#cb10-246" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Healthcare costs and health insurance fund revenue"</span>, </span>
+<span id="cb10-247"><a href="#cb10-247" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Healthcare costs and total revenue that flowed into the Health Insurance Fund"</span>, </span>
+<span id="cb10-248"><a href="#cb10-248" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Billions of Dollars"</span>, <span class="at">x =</span> <span class="st">""</span> )</span>
+<span id="cb10-249"><a href="#cb10-249" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
