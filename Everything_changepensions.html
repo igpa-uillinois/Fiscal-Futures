@@ -198,6 +198,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="./FedMoneyReceived.html">
  <span class="dropdown-text">Federal COVID Money Received</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./adjusted_values.html">
+ <span class="dropdown-text">Adjusted Values</span></a>
+  </li>  
     </ul>
   </li>
 </ul>
@@ -328,6 +332,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Federal COVID Money Received</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./adjusted_values.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Adjusted Values</span></span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -342,19 +352,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./FundsIncluded.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">An All Funds Approach</span></span></a>
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">An All Funds Approach</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./code-cleaning.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Gathering and Cleaning Data!</span></span></a>
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Gathering and Cleaning Data!</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./past-mistakes.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Past Report Corrections</span></span></a>
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Past Report Corrections</span></span></a>
   </div>
 </li>
       </ul>
@@ -1134,8 +1144,8 @@ Important
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(exp_temp, <span class="at">file =</span> <span class="fu">paste0</span>(<span class="st">"./data/FY"</span>, current_year, <span class="st">" Files/exp_pensionrecode.csv"</span>))</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(rev_temp, <span class="at">file =</span> <span class="fu">paste0</span>(<span class="st">"./data/FY"</span>, current_year, <span class="st">" Files/rev_pensionrecode.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># write_csv(exp_temp, file = paste0("./data/FY", current_year, " Files/exp_pensionrecode.csv"))</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="co"># write_csv(rev_temp, file = paste0("./data/FY", current_year, " Files/rev_pensionrecode.csv"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -5406,8 +5416,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb49-773"><a href="#cb49-773" aria-hidden="true" tabindex="-1"></a><span class="in">  pivot_wider(names_from = rev_type_new, values_from = total_reciepts, names_prefix = "rev_") </span></span>
 <span id="cb49-774"><a href="#cb49-774" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb49-775"><a href="#cb49-775" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-776"><a href="#cb49-776" aria-hidden="true" tabindex="-1"></a><span class="in">write_csv(exp_temp, file = paste0("./data/FY", current_year, " Files/exp_pensionrecode.csv"))</span></span>
-<span id="cb49-777"><a href="#cb49-777" aria-hidden="true" tabindex="-1"></a><span class="in">write_csv(rev_temp, file = paste0("./data/FY", current_year, " Files/rev_pensionrecode.csv"))</span></span>
+<span id="cb49-776"><a href="#cb49-776" aria-hidden="true" tabindex="-1"></a><span class="in"># write_csv(exp_temp, file = paste0("./data/FY", current_year, " Files/exp_pensionrecode.csv"))</span></span>
+<span id="cb49-777"><a href="#cb49-777" aria-hidden="true" tabindex="-1"></a><span class="in"># write_csv(rev_temp, file = paste0("./data/FY", current_year, " Files/rev_pensionrecode.csv"))</span></span>
 <span id="cb49-778"><a href="#cb49-778" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb49-779"><a href="#cb49-779" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb49-780"><a href="#cb49-780" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
