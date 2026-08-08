@@ -72,7 +72,9 @@ rev_temp %>%
 
   geom_line(aes(x=fy, y=receipts,color=rev_type_name)) +
       theme_classic() +
-  scale_y_continuous(labels = comma)+
+   scale_x_continuous(expand = c(0,0), limits = c(1998, current_year+.5), breaks = c(1998, 2005, 2010, 2015, 2020, current_year)) +
+  
+  scale_y_continuous(labels = comma, )+
   labs(title = "Federal to State Transfers", 
        caption = "These values include stimulus funds after the Great Recession and the COVID pandemic response.",
        y = "Millions of Dollars", x = "") + 
@@ -87,17 +89,20 @@ rev_temp %>%
   geom_line(aes(x=fy, y=receipts,color=rev_type_name)) +
       theme_classic() +
   scale_y_continuous(labels = comma)+
-  labs(title = "Federal to State Transfers", 
-       caption = "These values include stimulus funds after the Great Recession and the COVID pandemic response.",
+   scale_x_continuous(expand = c(0,0), limits = c(1998, current_year+.5), breaks = c(1998, 2005, 2010, 2015, 2020, current_year)) +
+  
+  labs(title = "Federal to State Transfers without Stimulus Funds", 
+       caption = "These values EXCLUDE stimulus funds after the Great Recession and the COVID pandemic response.",
        y = "Millions of Dollars", x = "") + 
   theme(legend.position = "bottom", legend.title = element_blank()  )
 ```
 
-\
+
+
 All federal revenue summed together:
 
 ```{r}
-fedrev<- rev_temp %>% 
+fedrev <- rev_temp %>% 
   filter(rev_type == "58" | rev_type == "59" | rev_type == "57") 
 
 fedrev %>% 
@@ -107,6 +112,8 @@ fedrev %>%
   geom_line(aes(x=fy, y=receipts)) +
       theme_classic() +
   scale_y_continuous(labels = comma)+
+   scale_x_continuous(expand = c(0,0), limits = c(1998, current_year+.5), breaks = c(1998, 2005, 2010, 2015, 2020, current_year)) +
+  
   labs(title = "All Federal Revenue", 
        y = "Millions of Dollars", x = "") + 
   theme(legend.position = "bottom", legend.title = element_blank()  )+
@@ -122,6 +129,8 @@ fedrev %>%
   geom_line(aes(x=fy, y=receipts)) +
       theme_classic() +
   scale_y_continuous(labels = comma)+
+   scale_x_continuous(expand = c(0,0), limits = c(1998, current_year+.5), breaks = c(1998, 2005, 2010, 2015, 2020, current_year)) +
+  
   labs(title = "All Federal EXCEPT Federal Stimulus Package", 
        y = "Millions of Dollars", x = "",
        caption = "Note: Dropping Federal Stimulus Package revenue only removes the $3.5 billion from FY20, $0.3 billion from FY21, and 
