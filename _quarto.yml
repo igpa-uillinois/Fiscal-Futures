@@ -25,6 +25,7 @@ book:
         - TaxRefunds.qmd
         - K12_Education.qmd
         - FedMoneyReceived.qmd
+        - adjusted_values.qmd
     - part: "Methodology"
       chapters:
         - FundsIncluded.qmd
@@ -57,6 +58,7 @@ book:
           - TaxRefunds.qmd
           - K12_Education.qmd
           - FedMoneyReceived.qmd
+          - adjusted_values.qmd
       
 format:
   html:
