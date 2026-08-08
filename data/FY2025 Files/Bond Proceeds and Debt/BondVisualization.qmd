@@ -1,0 +1,286 @@
+---
+title: "Untitled"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+# Visualization of Bond Proceeds - Jahun's Trial
+
+```{r}
+library(tidyverse)
+library(networkD3)
+library(htmlwidgets)
+```
+
+```{r}
+
+current_year <- 2025 # fiscal year, not calendar year
+past_year=current_year-1
+rev_temp <- read_csv(paste0("data/FY", current_year, " Files/rev_temp.csv")) |>
+  filter(agency != 799)
+
+
+rev_bonds = rev_temp %>% 
+filter(fy == 2025) %>% 
+filter(rev_type == 72)
+
+rev_bonds
+```
+
+
+### 2 Levels (Fund -> Agency)
+
+```{r}
+
+
+#library(networkD3)
+# 1) links: from (Source), to (Target), value 
+
+link1 <- rev_bonds %>%
+  mutate(
+    source = paste0(fund_name_ab, " (Fund ", fund, ")"),
+    target = paste0(agency_name, " (Agency ", agency, ")"),
+    value  = receipts
+  )
+
+# Node List that contains the names for nodes
+node1 <- data.frame(name = unique(c(link1$source, link1$target)),
+                    stringsAsFactors = FALSE)
+
+# Indexing: it starts from 0
+link2 <- link1 %>% 
+  mutate(
+    source = match(source, node1$name) - 1,
+    target = match(target, node1$name) - 1
+  )
+
+# 4) Adding Receipts to Labels
+node_amounts <- link1 %>%
+  select(source, target, value) %>%
+  pivot_longer(cols = c(source, target),
+               names_to = "type",
+               values_to = "name") %>%
+  group_by(name) %>%
+  summarise(total_value = sum(value, na.rm = TRUE), .groups = "drop")
+
+node1 <- node1 %>%
+  left_join(node_amounts, by = "name")
+
+node1 <- node1 %>%
+  mutate(total_value = ifelse(is.na(total_value), 0, total_value))
+
+node1 <- node1 %>%
+  mutate(
+    label = sprintf("%s | $%.1fM", name, total_value / 1e6)
+  )
+
+# 5) Making Sankey Diagram
+p1 <- sankeyNetwork(
+  Links   = link2,
+  Nodes   = node1,
+  Source  = "source",
+  Target  = "target",
+  Value   = "value",
+  NodeID  = "label",  
+  fontSize = 11,
+  nodeWidth = 30,
+width  = "100%"
+
+)
+
+p1
+
+
+#library(htmlwidgets)
+# Adding Custom Labels
+p1 <- onRender(
+  p1,
+  "
+  function(el, x) {
+
+    // Horizontal Spacing
+    var offsetLeft  = -10;  // left-shift amount for the source label (px)
+    var offsetRight =  40;  // right-shift amount for the target label (px)
+    var dy          = 12;   // line spacing (px)
+
+    d3.select(el).selectAll('.node text')
+      .each(function(d) {
+
+        var text  = d3.select(this);
+        var full  = text.text();          
+        var parts = full.split(' | ');    
+
+        var xPos   = 0;
+        var anchor = 'middle';
+
+        // SOURCE Nodes
+        if (d.sourceLinks.length > 0 && d.targetLinks.length == 0) {
+          anchor = 'end';
+          xPos   = offsetLeft;
+        }
+        // TARGET Nodes
+        else if (d.targetLinks.length > 0 && d.sourceLinks.length == 0) {
+          anchor = 'start';
+          xPos   = offsetRight;
+        }
+        // Middle Nodes
+        else {
+          anchor = 'start';
+          xPos   = offsetRight;
+        }
+
+        text.text(null);
+        text.attr('text-anchor', anchor);
+
+        for (var i = 0; i < parts.length; i++) {
+          text.append('tspan')
+              .attr('x', xPos)
+              .attr('dy', i === 0 ? 0 : dy)
+              .text(parts[i]);
+        }
+      });
+  }
+  "
+)
+
+p1
+
+
+
+```
+
+
+### 3 levels (Fund -> Agency -> Rev_type) for Total Amount
+
+
+```{r}
+
+# 1) links: from (Source), to (Target), value 
+link3 <- rev_bonds %>%
+  mutate(
+    source = paste0(agency_name, " (Agency ", agency, ")"),
+    target = rev_type_name,
+    value  = receipts
+  )
+
+# Node List that contains the names for nodes
+node2 <- data.frame(name = unique(c(link3$source, link3$target)),
+                    stringsAsFactors = FALSE)
+
+# 3) Indexing from 0
+link4 <- link3 %>% 
+  mutate(
+    source = match(source, node2$name) - 1,
+    target = match(target, node2$name) - 1
+  )
+
+# 4) Calculating Receipts and Adding to Label
+node2_amounts <- link3 %>%
+  select(source, target, value) %>%
+  pivot_longer(cols = c(source, target),
+               names_to = "type",
+               values_to = "name") %>%
+  group_by(name) %>%
+  summarise(total_value = sum(value, na.rm = TRUE), .groups = "drop")
+
+node2 <- node2 %>%
+  left_join(node2_amounts, by = "name")
+
+node2 <- node2 %>%
+  mutate(total_value = ifelse(is.na(total_value), 0, total_value))
+
+node2 <- node2 %>%
+  mutate(
+    label = sprintf("%s | $%.1fM", name, total_value / 1e6)
+  )
+
+
+# Merging Two Sections
+
+links <- bind_rows(
+  link1 %>% select(source, target, value),
+  link3 %>% select(source, target, value)
+)
+
+nodes = bind_rows(node1, node2)
+nodes = unique(nodes)
+
+# Name index (from 0)
+links <- links %>%
+  mutate(
+    source = match(source, nodes$name) - 1,
+    target = match(target, nodes$name) - 1
+  )
+
+
+
+p2 <- sankeyNetwork(
+  Links   = links,
+  Nodes   = nodes,
+  Source  = "source",
+  Target  = "target",
+  Value   = "value",
+  NodeID  = "label",
+  fontSize = 12,
+  nodeWidth = 30,
+  width  = "200%"
+)
+
+p2
+
+
+
+p2 <- onRender(
+  p2,
+  "
+  function(el, x) {
+
+    // Horizontal Spacing
+    var offsetLeft  = -10;  // left-shift amount for the source label (px)
+    var offsetRight =  40;  // right-shift amount for the target label (px)
+    var dy          = 12;   // line spacing (px)
+
+    d3.select(el).selectAll('.node text')
+      .each(function(d) {
+
+        var text  = d3.select(this);
+        var full  = text.text();          
+        var parts = full.split(' | ');    
+
+        var xPos   = 0;
+        var anchor = 'middle';
+
+        // SOURCE Nodes
+        if (d.sourceLinks.length > 0 && d.targetLinks.length == 0) {
+          anchor = 'end';
+          xPos   = offsetLeft;
+        }
+        // TARGET Nodes
+        else if (d.targetLinks.length > 0 && d.sourceLinks.length == 0) {
+          anchor = 'start';
+          xPos   = offsetRight;
+        }
+        // Middle Nodes
+        else {
+          anchor = 'start';
+          xPos   = offsetRight;
+        }
+
+        text.text(null);
+        text.attr('text-anchor', anchor);
+
+        for (var i = 0; i < parts.length; i++) {
+          text.append('tspan')
+              .attr('x', xPos)
+              .attr('dy', i === 0 ? 0 : dy)
+              .text(parts[i]);
+        }
+      });
+  }
+  "
+)
+
+p2
+```
+
