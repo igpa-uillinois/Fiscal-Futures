@@ -312,7 +312,7 @@ When healthcare costs are not manually separated into their own category, it loo
 - Illinois Power Agency (445)  
 - Labor (452)   
 - State Lottery (458)   
-- Veteran's Affairs (497)    
+- Veterans' Affairs (497)    
 
 ```{r}
 #| label: examine-bureau-of-benefits-expenditures
@@ -440,7 +440,7 @@ exp_temp <- exp_temp %>% filter(in_ff == 1) # drops in_ff = 0 funds AFTER dealin
 ```{r debt-service}
 debt_drop <- exp_temp %>% 
   filter(object == "8841" |  object == "8811")  
-# escrow  OR  principle
+# escrow  OR  principal
 
 #debt_drop %>% group_by(fy) %>% summarize(sum = sum(expenditure)) %>% arrange(-fy)
 
@@ -548,7 +548,7 @@ exp_temp <- exp_temp %>%
 # - Illinois Power Agency (445)  
 # - Labor (452)   
 # - State Lottery (458)   
-# - Veteran's Affairs (497) 
+# - Veterans' Affairs (497) 
 
   #     agency=="507" | agency=="442" | agency=="445" | agency=="452" |agency=="458" | agency=="497" ~ as.character(agency), # Were included within "other departments"
     
@@ -580,7 +580,7 @@ exp_temp <- exp_temp %>%
              group == "489" ~ "SERS",
              group == "478" ~ "Healthcare and Family Services",
              group == "482" ~ "Public Health",
-             group == "497" ~ "Veteran's Affairs",
+             group == "497" ~ "Veterans' Affairs",
              group == "507" ~ "GOMB",
              group == "901" ~ "STATE PENSION CONTRIBUTION",
              group == "903" ~ "DEBT SERVICE",
@@ -857,7 +857,7 @@ aggregate_rev_labels <- ff_rev %>%
          # "GARNISHMENT-LEVIES " = rev_32 , # dropped
          "LOTTERY RECEIPTS" = rev_33 ,
          "OTHER TAXES" = rev_35,
-         "RECEIPTS FROM REVENUE PRODUCNG" = rev_36, 
+         "RECEIPTS FROM REVENUE PRODUCING" = rev_36, 
          "LICENSES, FEES & REGISTRATIONS" = rev_39 ,
          "MOTOR VEHICLE AND OPERATORS" = rev_42 ,
          #  "STUDENT FEES-UNIVERSITIES" = rev_45,   # dropped
@@ -1005,7 +1005,7 @@ exp_long <- pivot_longer(ff_exp, exp_402:exp_970 , names_to = c("type", "Categor
              Category == "478" ~ "FAMILY SERVICES net Medicaid",
              Category == "482" ~ "PUBLIC HEALTH", 
              Category == "492" ~ "REVENUE", 
-             Category == "493" ~  "Teacher Retirmeent System (TRS)",
+             Category == "493" ~  "Teacher Retirement System (TRS)",
              Category == "494" ~ "TRANSPORTATION" ,
           
              Category == "489" ~ "SERS",

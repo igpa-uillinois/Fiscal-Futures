@@ -520,12 +520,12 @@ The Local Transfers from the Personal Property Replacement Tax (fund 802) increa
 
 Debt Service expenditures include interest payment on both short-term and long-term debt. We do not include escrow or principal payments.
 
-**Decision from Sept 30 2022:** We are no longer including short term principal payments as a cost; only interest on borrowing is a cost. Pre FY22 and the FY21 correction, we did include an escrow payment and principle payments as costs but not bond proceeds as revenues. This caused expenditures to be inflated because we were essentially counting debt twice - the principle payment and whatever the money was spent on in other expenditure categories, which was incorrect.
+**Decision from Sept 30 2022:** We are no longer including short term principal payments as a cost; only interest on borrowing is a cost. Pre FY22 and the FY21 correction, we did include an escrow payment and principal payments as costs but not bond proceeds as revenues. This caused expenditures to be inflated because we were essentially counting debt twice - the principal payment and whatever the money was spent on in other expenditure categories, which was incorrect.
 
 ```{r debt-service}
 debt_drop <- exp_temp %>% 
   filter(object == "8841" |  object == "8811")  
-# escrow  OR  principle
+# escrow  OR  principal
 
 #debt_drop %>% group_by(fy) %>% summarize(sum = sum(expenditure)) %>% arrange(-fy)
 
@@ -860,7 +860,7 @@ drop_type <- c("32", "45", "51",
 # bond issue proceeds, interagency receipts, cook IGT, Prior year refunds.
 
 
-rev_temp <- rev_temp %>% f-ilter(!rev_type_new %in% drop_type)
+rev_temp <- rev_temp %>% filter(!rev_type_new %in% drop_type)
 # keep observations that do not have a revenue type mentioned in drop_type
 
 table(rev_temp$rev_type_new)
@@ -983,7 +983,7 @@ aggregate_rev_labels <- ff_rev %>%
          # "GARNISHMENT-LEVIES " = rev_32 , # dropped
          "LOTTERY RECEIPTS" = rev_33 ,
          "OTHER TAXES" = rev_35,
-         "RECEIPTS FROM REVENUE PRODUCNG" = rev_36, 
+         "RECEIPTS FROM REVENUE PRODUCING" = rev_36, 
          "LICENSES, FEES & REGISTRATIONS" = rev_39 ,
          "MOTOR VEHICLE AND OPERATORS" = rev_42 ,
          #  "STUDENT FEES-UNIVERSITIES" = rev_45,   # dropped
@@ -1149,12 +1149,12 @@ exp_long <- pivot_longer(ff_exp, exp_402:exp_970 , names_to = c("type", "Categor
              Category == "478" ~ "FAMILY SERVICES net Medicaid",
              Category == "482" ~ "PUBLIC HEALTH", 
              Category == "492" ~ "REVENUE", 
-             Category == "493" ~  "Teacher Retirmeent System (TRS)",
+             Category == "493" ~  "Teacher Retirement System (TRS)",
              Category == "494" ~ "TRANSPORTATION" ,
           
              Category == "489" ~ "SERS",
              Category == "507" ~ "GOMB",
-             Category == "497" ~ "VETERNS' AFFAIRS" ,
+             Category == "497" ~ "VETERANS' AFFAIRS" ,
              Category == "532" ~ "ENVIRONMENTAL PROTECT AGENCY" ,
              Category == "557" ~ "IL STATE TOLL HIGHWAY AUTH" ,
              Category == "589" ~ "State Employment Retirement System (SERS)",
