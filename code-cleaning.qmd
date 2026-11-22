@@ -61,32 +61,32 @@ Normally, when your receive the new fiscal year files from the Comptrollers offi
 
 
 ```{r eval=FALSE}
-rev_variable_names <- read_xlsx("inputs/ioc_data_received/revenue/Fis_Fut_Rev_2026.xlsx") |> names()
+rev_variable_names <- read_xlsx("inputs/ioc_data_received/revenue/Fis_Fut_Rev_Final_2026.xlsx") |> names()
 
 rev_variable_names
 ## New files had different variable names!! 
 ## Had to update code slightly ## 
-rev_current <- read_xlsx("inputs/ioc_data_received/revenue/Fis_Fut_Rev_2026.xlsx") %>% 
+rev_current <- read_xlsx("inputs/ioc_data_received/revenue/Fis_Fut_Rev_Final_2026.xlsx") %>% 
   rename(fy = 'FY',
          fund = 'FUND',
          fund_name = 'FUND NAME',
          agency = 'AGENCY',
          agency_name = 'AGENCY NAME',
          source = 'REVENUE SOURCE',
-         source_name = 'REVENUE SOURCE NAME',
+         source_name = 'REVENUR SOURCE NAME',   ## Had a typo in the names, AWM 11/13/2026
          receipts = 'AMOUNT'
-  )  %>% mutate(data_source = "rev IOC 09.09.2026")
+  )  %>% mutate(data_source = "rev IOC 11.12.2026")
 
 
 
-exp_variable_names <- read_xlsx("inputs/ioc_data_received/expenditures/Fis_Fut_Exp_2026_09_09.xlsx") |> names()
+exp_variable_names <- read_xlsx("inputs/ioc_data_received/expenditures/Fis_Fut_Exp_Final_2026.xlsx") |> names()
 
 
 exp_variable_names
 # some variable names in the excel file received change
 # check each year during preliminary and final datasets 
 # can't bind rows unless columns match
-exp_current <- read_xlsx("inputs/ioc_data_received/expenditures/Fis_Fut_Exp_2026_09_09.xlsx") %>% 
+exp_current <- read_xlsx("inputs/ioc_data_received/expenditures/Fis_Fut_Exp_Final_2026.xlsx") %>% 
   rename(fy = 'FY',
          fund = 'FUND',
          fund_name = 'FUND NAME',
@@ -96,10 +96,10 @@ exp_current <- read_xlsx("inputs/ioc_data_received/expenditures/Fis_Fut_Exp_2026
          org_name = 'ORGANIZATION NAME',
          obj_seq_type = 'APPROPRIATION',
          wh_approp_name = 'APPROPRIATION NAME',
-         appn_net_xfer = 'APPROPRIATED',
-         expenditure = 'EXPENDED THRU JUNE 30'
+         appn_net_xfer = 'APPROPRIATION NET OF TRANSFERS', # 'APPROPRIATED',
+         expenditure = 'EXPENDITURES', # 'EXPENDED THRU JUNE 30'
          ) %>%
-  mutate( data_source = "exp IOC 09.09.2026"
+  mutate( data_source = "exp IOC 11.13.2026"
   )  |> 
   select(fy, fund, fund_name, agency, agency_name, appr_org, org_name, obj_seq_type, wh_approp_name, appn_net_xfer, expenditure, data_source)
 
@@ -215,7 +215,7 @@ General steps:
 agencies_past <- allexpfiles %>% 
   filter(fy < current_year) %>% 
   mutate(agency = as.character(agency),
-         agency_name = tolower(agency_name)
+         agency_name = toupper(agency_name)
          ) %>% 
   group_by(agency, agency_name) %>% unique() %>% 
   summarize(expenditure = sum(expenditure, na.rm = TRUE)) %>% 
@@ -228,7 +228,7 @@ agencies_past <- allexpfiles %>%
 agencies <- allexpfiles  %>% 
   filter(fy == current_year) %>% 
   mutate(agency = as.character(agency),
-         agency_name = tolower(agency_name)) %>% 
+         agency_name = toupper(agency_name)) %>% 
   group_by(agency, agency_name) %>% 
   summarize(expenditure = sum(expenditure, na.rm = TRUE))
 
@@ -321,7 +321,7 @@ Changes in organizations are usually not a big deal for the Fiscal Gap calculati
 agencies_past <- allrevfiles  %>% 
   filter(fy < current_year) %>% 
   mutate(agency == as.character(agency),
-         agency_name = tolower(agency_name)
+         agency_name = toupper(agency_name)
          ) %>% 
   group_by(agency, agency_name) %>% unique() %>% 
   summarize(Receipts = sum(receipts, na.rm = TRUE)) %>% 
@@ -331,7 +331,7 @@ agencies_past <- allrevfiles  %>%
 agencies <- allrevfiles  %>% 
   filter(fy == current_year) %>% 
   mutate(agency == as.character(agency),
-         agency_name = tolower(agency_name)
+         agency_name = toupper(agency_name)
          ) %>% 
   group_by(agency, agency_name) %>% 
   summarize(Receipts = sum(receipts, na.rm = TRUE))
@@ -386,7 +386,7 @@ Remember, some of them maybe be false alarms and have small fund name changes.
 sources_past <- allrevfiles  %>% 
   filter(fy < current_year) %>% 
   mutate(source = as.character(source),
-         source_name = tolower(source_name)) %>% 
+         source_name = toupper(source_name)) %>% 
   group_by(source, source_name) %>% 
   summarize(count = n(), Receipts = sum(receipts, na.rm = TRUE))  %>% 
   drop_na()
@@ -394,7 +394,7 @@ sources_past <- allrevfiles  %>%
 sources <- allrevfiles  %>% 
   filter(fy == current_year) %>% 
   mutate(source = as.character(source),
-         source_name = tolower(source_name)) %>% 
+         source_name = toupper(source_name)) %>% 
   group_by(source, source_name) %>% 
   summarize(count = n(), Receipts = sum(receipts, na.rm = TRUE)) %>% 
   unique()
