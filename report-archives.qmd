@@ -1,0 +1,88 @@
+---
+title: "Preserving annual report results"
+toc: true
+---
+
+**Proposal, not an implemented storage policy.** The annual data folders and `data/FY2025 Files/Archived/` already preserve some output. The remaining need is to identify exactly what supported each published report, while allowing the live site to improve.
+
+## Keep published results separate from later revisions
+
+Preserve two explicitly named products: **as published** (the data and method used for a particular edition) and **restated** (an older fiscal year recalculated using a later method or data delivery). A newer file should never silently replace the as-published record. A report about FY2024 may be published in 2025 and contain estimates for every year since 1998.
+
+A practical approach is a small archive index in Git and a frozen bundle for each release. Hosting those bundles on GitHub Releases or an institutional repository is a choice still to be made. No external archive or release was created in this documentation update.
+
+Suggested bundle layout:
+
+```text
+report-id/run-id/
+  manifest.yml
+  report/             # final PDF, citation, original URL
+  source/             # exact R/Quarto code and lookup workbooks
+  inputs/             # delivered data, or immutable references plus hashes
+  output/             # summary workbook, machine-readable totals, figures
+  site/               # rendered pages and assets for this run, if retained
+  validation/         # report-to-output comparison and explanation of differences
+  environment/        # R sessionInfo(), package versions, Quarto version
+```
+
+The `source` snapshot is particularly important if a run used uncommitted edits. A Git commit alone does not capture those edits or untracked inputs. Hashes identify exact files; they do not explain the method, so preserve both hashes and a narrative.
+
+## Manifest template
+
+Copy this template when an actual report bundle is assembled. `null` means not yet established, not zero or not applicable.
+
+```yaml
+report_id: null
+title: null
+fiscal_year: null
+publication_date: null
+edition: null                 # original, corrected, or restated
+run_id: null
+run_date: null
+report_url: null
+report_sha256: null
+repository_url: null
+source_commit: null
+working_tree_changes: null   # saved patch/source snapshot, or confirmed clean
+calculation_entrypoint: null # identify pension variant explicitly
+data_coverage: null
+data_received_date: null
+data_status: null            # preliminary/final; distinguish revenue/expenditure
+input_and_lookup_hashes: null
+methodology:
+  debt: null                 # include object 8800 qualification
+  refunds: null              # fund flags, deductions, rebate treatment
+  healthcare: null           # duplicate contributions and employee premiums
+  pensions: null             # included objects and presentation
+  local_transfers: null
+  pandemic_funds: null       # receipts, expenditures, scenario scope
+units: null
+gap_definition: revenue_minus_expenditure
+rounding: null
+output_files_and_hashes: null
+report_tables_verified: null
+unresolved_differences: null
+supersedes: null
+```
+
+## Reconciliation record
+
+For each report table, retain fiscal year, category, printed value, computed unrounded value, units, difference, and explanation. Check that categories sum to totals and that revenue minus expenditure equals the fiscal gap. Compare at the report's rounding precision, retaining unrounded values in the bundle.
+
+For revised historical series, explain differences in separate steps: source-data revisions; fund-frame changes; debt/refund/healthcare/pension rules; pandemic scenarios; and category reallocations. A reallocation should reconcile to zero change in aggregate spending unless included records also changed.
+
+## Initial inventory to assemble
+
+| Material | Current evidence | Archive status |
+|---|---|---|
+| Early RPubs site and annual GitHub projects | Maintainer account and [verified repository inventory](project-guide.qmd#earlier-and-related-repositories) | RPubs URL, snapshot dates, unique content, and publication mappings still needed |
+| FY2020 report | PDF supplied locally; all-funds totals shown as $82.7B expenditures, $78.3B revenue, and a $4.4B deficit | As-published anchor identified; exact Stata run/workbook still needs mapping |
+| FY2021 report | PDF supplied locally; detailed appendix shows $92.264B expenditures and $91.392B revenue | As-published anchor identified; exact Stata run/workbook still needs mapping |
+| FY2022 report | PDF supplied locally; treated as final at maintainer direction despite draft/comment filename; Appendix Item 4 reports $101.829B expenditures, $113.022B revenue, and an $11.192B surplus | As-published anchor identified; must distinguish the report from later FY2022 summary workbooks with different totals |
+| FY2023 report | PDF supplied locally; Appendix Item 4 provides the restated 1998–2023 series | Published/restated anchor identified; exact published-run mapping not established |
+| FY2024 annual report | PDF supplied locally; $114.99B expenditures, $115.14B revenue, and a $144M surplus | As-published anchor identified; preserve separately from the later FY2025 restatement of FY2024 |
+| FY2025 revenue report | PDF supplied locally; January 2026, pre-lapse-period report with $118.16B total revenue | Revenue-only publication; it is not a full fiscal-gap result |
+| FY2025 expenditures report | PDF supplied locally; final-tallies companion report with $119.51B expenditures, $118.16B revenue, and a -$1.35B fiscal gap | As-published full fiscal-gap anchor identified; preserve its CURE/ESSER timing and refund-fund notes |
+| FY2026 forthcoming publication | Four supplied output workbooks in `Fiscal Futures FY2026/outputs/`: two Data Hub workbooks and two summary workbooks, each with `pensions_separate` or `pensions_with_agencies` in the filename | Treat as the forthcoming-publication record. Preserve both named pension presentations, record the selected presentation in the release manifest, and retain the output filenames and data vintage alongside the published report |
+
+When inventorying annual repositories, retain each original URL, fiscal-year scope, report citation, relevant commit, and a list of unique files. Link redundant content to the consolidated guide; avoid deleting older repositories until their unique evidence has been preserved and mapped.
