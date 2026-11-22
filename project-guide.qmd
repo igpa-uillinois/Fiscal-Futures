@@ -1,0 +1,92 @@
+---
+title: "Project history, decisions, and archives"
+toc: true
+---
+
+The Fiscal Futures website primarily helps other researchers understand what exists in the Illinois budget data: its variables, institutions, funds, and possible uses. Its coverage is broader than the subset used in Fiscal Futures report totals. A debt, healthcare, or refund item can be worth documenting and visualizing even when it is excluded from the reports.
+
+This separate project guide explains how the website developed, where its files live, and why two reports can give different values for the same fiscal year. See the [report-methodology evidence register](methodology-register.qmd) for specific conflicts in report inclusion rules and the [archive proposal](report-archives.qmd) for preserving annual results. Data documentation, report calculations, and published-report archives serve distinct purposes.
+
+## Scope and evidence
+
+Prepared September 22, 2026, from the local working files and Git history through `d37728e`. The checkout already contained uncommitted FY2026 work, including changes to calculation files and lookup workbooks. Descriptions of current code refer to that working copy, not a verified published release. This documentation does not change the calculations or certify report totals.
+
+Three kinds of evidence are distinguished throughout:
+
+- **Maintainer recollection:** project history supplied by Alea Wilbur-Mujtaba, including the RPubs period and separate annual GitHub projects.
+- **Repository evidence:** source code, explanatory text, saved outputs, and dated commits. A comment records an intention; active code records an implementation; neither alone proves what a published report used.
+- **Published evidence:** a particular report edition and its tables or methodological notes. A later report's historical series may be revised and is not necessarily the series originally published.
+
+## How the project evolved
+
+| Period or milestone | What changed | Evidence and limits |
+|---|---|---|
+| Inherited workflow | Researchers worked with inherited Stata programs and annual files. Alea reports substantially rewriting and improving the workflow in R, identifying errors and inconsistent inclusion rules during that work. | Maintainer account; the pre-existing README describes Stata use until August 2022. This is not an audit of every predecessor's code. |
+| RPubs and annual projects | Initially a site was published on RPubs and updated each year for a new dataset. Separate GitHub projects existed for individual report years. | Maintainer account; public repository names verified below. Exact RPubs URLs and dates of each transition remain to be recorded. |
+| September 30, 2022 | Debt notes date the decision to stop counting short-term principal as an expense. | `Debt.qmd` and `Everything.qmd`; see the retained capital-project exception in the register. The maintainer also recalls an earlier interest-only period, followed by principal plus interest; the dates of that earlier cycle are not yet established. |
+| January 2, 2023 | This repository's recorded history begins with construction of a Quarto site, changing the output directory to `docs`, and a rendered document. | Commits `6da05e8`, `44d622e`, and `cf7bb52`. This dates the local repository history, not the beginning of Fiscal Futures research or RPubs publishing. |
+| Consolidated website | The shared site brings together multiple years of data, the fiscal-gap calculation, methodology, and topic-specific investigations. | Current directory structure and `_quarto.yml`; consolidation date and relationships to each annual repository still need verification. |
+| FY2024 report workflow | Pension costs remain in the departments providing services, with a separate informational pension table. | Opening explanation in `Everything_changepensions.qmd`; first commit for that page, `dc296ba`, February 19, 2025. Fiscal year and implementation/publication year are different. |
+| September 4, 2025 | A commit records removing profile/workflow files in favor of transferring ownership. | `2fa9aa0`; current remotes and site configuration use `igpa-uillinois/Fiscal-Futures`. Older documentation still contains `aleawm` links. This does not establish the exact transfer completion date. |
+| January 23, 2026 | Intermediate datasets and past output were moved into an archive subfolder. | `69bae74`; `data/FY2025 Files/Archived/` exists. This is useful preservation, but is not a complete report-release manifest. |
+| September 2026 | The working cleaning and main calculation pages target FY2026; several topic pages and the pension variant still target FY2025. | Current source; `77ee0e2` describes FY2026 FOIA expenditures as preliminary. A website render must not be assumed to represent one uniform data vintage. |
+
+The consolidated site reduces duplicated annual documentation. It also creates a preservation problem: updating historical data or methods can change the entire series. **Fiscal year, report edition, data vintage, and methodology version must therefore be recorded separately.**
+
+### Earlier and related repositories
+
+The public GitHub repository listing for `AleaWM` confirms these projects. This is a discovery inventory; their individual histories and calculation outputs have not yet been compared.
+
+| Repository | Relationship to verify |
+|---|---|
+| [Fiscal-Futures-Project](https://github.com/AleaWM/Fiscal-Futures-Project) | Described in the listing as an old version; identify the report years and any unique early material. |
+| [Fiscal-Futures-IL-FY2023](https://github.com/AleaWM/Fiscal-Futures-IL-FY2023) | Annual FY2023 code and data; match the final report to a commit/output. |
+| [Fiscal-Futures-FY2024](https://github.com/AleaWM/Fiscal-Futures-FY2024) | Annual FY2024 code; compare with the consolidated site's pension variant. |
+| [Fiscal-Futures-FY2025](https://github.com/AleaWM/Fiscal-Futures-FY2025) | FY2025 report graphs and tables; identify the precise report and run. |
+| [Fiscal-Futures-Archived](https://github.com/AleaWM/Fiscal-Futures-Archived) | Listing describes a repository preserved around ownership change; verify the snapshot date. |
+| [Illinois-State-Budget-Dataset](https://github.com/AleaWM/Illinois-State-Budget-Dataset) | Related researcher dataset project; do not assume its broader data frame equals the Fiscal Futures report frame. |
+
+## Folder and source map
+
+| Location | Role | How to use it |
+|---|---|---|
+| Root `.qmd` files | Editable Quarto source for the website and analyses | Edit these rather than generated HTML. Not every root page is listed in the book navigation. |
+| `_quarto.yml` | Book chapters, navigation, theme, and `docs` output directory | Determines which pages appear in the main site. |
+| `index.qmd`, `README.md` | Website introduction and GitHub introduction | Entry points; older descriptions of coverage should not be treated as a release manifest. |
+| `code-cleaning.qmd` | Import, combine, label, and recode IOC files | Produces combined files and annual `exp_temp.csv` / `rev_temp.csv`. Check disabled example chunks and year-specific input names before running. |
+| `Everything.qmd` | Main fiscal-gap transformation and aggregation workflow | Includes exclusions, recoding, tables, figures, and file writes. The working version currently separates pension costs. |
+| `Everything_changepensions.qmd` | Alternative workflow retaining pension costs in departments | Its introduction identifies the FY2024 report change. Do not assume it differs from the main page only in pensions; compare full versions before reconciliation. |
+| Topic pages such as `Debt.qmd`, `Healthcare.qmd`, `TaxRefunds.qmd`, `Medicaid.qmd` | Investigation and explanation | A chart can deliberately show items excluded from Fiscal Futures totals. Presence on a topic page is not proof of inclusion. |
+| `FundsIncluded.qmd`, `past-mistakes.qmd` | Frame criteria and historical correction notes | Valuable methodological evidence; unresolved inconsistencies are recorded separately. |
+| `inputs/ioc_data_received/DATA_RAW/` | Files described by the data README as the original FOIA deliveries | Preserve receipt date and preliminary/final status. Do not overwrite an earlier delivery when final data arrive. |
+| `inputs/ioc_data_received/revenue/`, `expenditures/` | Annual files used by the import workflow, including legacy formats | File formats and column names vary across years. |
+| `inputs/funds_ab_in.xlsx` | Fund identities, recodes, and `in_ff` decisions | A substantive methodology input, not merely a label list. Preserve the exact workbook with each release. |
+| `inputs/ioc_source.xlsx` | Revenue source lookup used by this project | The data README previously called this `ioc_sources.xlsx`; use the actual filename. |
+| `data/FY2022 Files/` through `data/FY2026 Files/` | Annual combined data, intermediate files, summary workbooks, and supporting analyses | A folder year usually identifies the run/data vintage; a file may contain the complete historical series. It is not automatically a final-report archive. |
+| `data/FY2025 Files/Archived/` | Previously moved output and intermediates | Preserve provenance before treating any file as the version used in print. |
+| `data/name_and_number_tables/` | Supporting label/code tables | Consult alongside the lookup workbooks. |
+| `data/all_data_cleaning_and_recoding.qmd` | Separate cleaning/recoding document | Assess its vintage and purpose before substituting it for the root cleaning workflow. |
+| `old-files/` | Alternate refund treatments and historical exploratory output | Includes `Everything_includesrefundfunds.qmd` and `Everything_norefund_funds.qmd`. Evidence of alternatives, not two endorsed current methods. |
+| `paper-figures/`, `images/` | Report figures and website illustrations | Trace figures to a run before using them to verify totals. |
+| `docs/`, `*_files/`, `.quarto/`, rendered `.html` | Rendered site, supporting assets, or Quarto working files | May reflect an earlier run than the current source. Do not infer current code behavior from cached output. |
+
+## Data flow and annual maintenance
+
+The intended flow is FOIA delivery → annual import and combined records → lookup joins and recoding → intermediate records → Fiscal Futures inclusion rules and categories → aggregate tables and figures → report and website.
+
+`exp_temp` and `rev_temp` are reused R object names as well as filenames. Their contents depend on the stage of execution. The main calculation reads the annual files and subsequently removes or changes records; a description of the object near the end of that calculation does not describe the input CSV. See register item M08.
+
+For an annual update:
+
+1. Preserve the IOC delivery and its receipt date and status. Normalize changing column names in the import code.
+2. Review new/reused funds, sources, and agencies. Record inclusion decisions and their reasons alongside the versioned lookup files.
+3. Align `current_year` and actual file paths in the pages being used. Run cleaning before calculations that consume its output.
+4. Choose the report's calculation variant explicitly. Record debt, refund, healthcare, pension, and CURE treatment, including exceptions.
+5. Compare category totals and overall totals with the preceding release. Separate new data, methodological changes, and category-only reallocations. Use revenue minus expenditure for the fiscal-gap sign convention; document units and rounding.
+6. Save an identified report run and reconcile it to the published tables before updating the public presentation.
+
+The project uses R, RStudio, and Quarto; package imports are declared within individual pages. `Instructions_UpdatingFiles_EachYear.docx` contains additional maintenance instructions. From the project root, `quarto render` builds the book into `docs/`, but **rendering executes analysis code and can write datasets and workbooks**. Review active write calls and use a preserved copy for historical reproduction. There is no claim here that a fresh full render of the current working copy succeeds.
+
+## Decisions still open
+
+The maintainer has not yet selected permanent storage for annual report output. The archive page proposes a small index in this repository plus preserved release bundles; it does not create releases or choose an external host. Earlier annual repositories should be inventoried and linked before removing redundant material. Preserve unique code, data vintages, and published output even where prose repeats.
