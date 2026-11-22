@@ -31,6 +31,11 @@ book:
         - FundsIncluded.qmd
         - code-cleaning.qmd
         - past-mistakes.qmd
+    - part: "Project Documentation"
+      chapters:
+        - project-guide.qmd
+        - methodology-register.qmd
+        - report-archives.qmd
  
  
   navbar: 
@@ -42,6 +47,11 @@ book:
           - FundsIncluded.qmd
           - code-cleaning.qmd
           - Everything.qmd
+      - text: "Project Documentation"
+        menu:
+          - project-guide.qmd
+          - methodology-register.qmd
+          - report-archives.qmd
       - text: "Data"
         href: https://github.com/igpa-uillinois/Fiscal-Futures/tree/main/data
       - text: "Recent Reports"
