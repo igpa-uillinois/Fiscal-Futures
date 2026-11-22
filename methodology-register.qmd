@@ -1,0 +1,99 @@
+---
+title: "Report methodology: conflicts and evidence"
+toc: true
+---
+
+This register records disagreements found during the September 22, 2026 documentation review. It separates stated policy, implementation, and historical publication evidence. **An apparent conflict is not proof that a published report is wrong.** No full numerical reconciliation or fresh calculation was performed. Working-copy observations may describe unfinished FY2026 work.
+
+The website's primary purpose is to describe the data for other researchers. Its topic pages intentionally cover more than the records included in Fiscal Futures reports. Showing principal payments, refunds, or other excluded items in a chart is not a methodology conflict. Entries below concern explicit claims about report inclusion, contradictory variable/stage descriptions, or report calculation code—not the mere presence of an item in the researcher documentation.
+
+Source links below point to editable source on GitHub; section names and code expressions identify the evidence even if line numbers move. For this review's baseline use commit `d37728e`, while recognizing that `Everything.qmd`, `Everything_changepensions.qmd`, `code-cleaning.qmd`, and the lookup workbooks already had local changes. Archive an exact source snapshot before using this register for reproduction.
+
+## M01 — Debt: interest-only policy versus combined capital debt
+
+**Confirmed policy/implementation qualification; historical transitions partly unresolved.** [Debt source](https://github.com/igpa-uillinois/Fiscal-Futures/blob/main/Debt.qmd), opening discussion and Coding Details, says principal and escrow are excluded and dates the short-term-principal change to September 30, 2022. The same page says object `8800` combines capital-project principal and interest and is included because separation is difficult.
+
+In [Everything source](https://github.com/igpa-uillinois/Fiscal-Futures/blob/main/Everything.qmd), `debt-service` drops `8811` and `8841`, while `debt_keep` retains `8813` and `8800` outside fund `0455`. Thus “interest only” is the stated principle, but is not a complete description of retained records. Excluding Tollway from `debt_keep` is not itself evidence of excluding it from total spending; it can remain in another category.
+
+The [FY2024 published report](https://igpa.uillinois.edu/wp-content/uploads/2025/07/IPGA-FY24-Annual-Report-07-15-25.pdf), printed page 6, footnote 4, states that principal repayments are excluded. Reconcile that statement with `8800` using the exact report run. The maintainer recalls an earlier interest-only → principal-plus-interest → interest-only sequence, but the first transition's dates and affected editions remain unverified. Needed: earlier report methodology, the corresponding Stata/R code, and a principal/interest breakdown for `8800`.
+
+## M02 — Refunds: fund exclusion versus a second revenue deduction
+
+**Confirmed documented historical problem; current prose/code conflict.** [Past corrections](https://github.com/igpa-uillinois/Fiscal-Futures/blob/main/past-mistakes.qmd) attributes understated revenue to both excluding fund `0278` and manually subtracting refunds from income/corporate income tax receipts. This records a double deduction, not a general instruction to subtract refunds again.
+
+In `Everything.qmd`, Tax refunds, a caption says refunds are excluded from spending and subtracted from revenue. However, the `tax_refund_long` construction and later refund joins/subtractions are commented out. The subsequent plot still refers to `tax_refund_long`; a clean-session run must resolve that dependency before its output can be trusted. `refunds_drop` uses an empty `c()` and therefore does not implement a substantive refund-object exclusion. Fund flags remain consequential.
+
+Object `9900` is explicitly restored with `in_ff = if_else(object == 9900, 1, in_ff)` for rebates described as FY2023 expenditure. The code condition itself has no FY2023 restriction. Verify any other years with that object rather than assuming the prose limits the rule.
+
+The two refund variants in `old-files/` and the active refund construction in `Everything_changepensions.qmd` show why the selected script must be recorded. Commit `188d944` (November 16, 2025) records excluding two small refund funds and claims totals did not change; the commit message is not a numerical validation. Needed: versioned fund flags, refund-object totals, and a bridge from gross receipts to the published net measure for each edition.
+
+## M03 — Healthcare: flag meaning and scope of duplicate removal
+
+**Confirmed documentation conflict.** [Healthcare source](https://github.com/igpa-uillinois/Fiscal-Futures/blob/main/Healthcare.qmd), Employer Contributions, describes `eehc = 1` as the state healthcare employer contribution. The main calculation's `eehc1` block instead sets `eehc = 0` for identified contributions and zeroes those expenditures. Read the actual predicate, not the flag's informal description.
+
+The topic page broadly describes object `1180` employer contributions as excluded. The main code targets particular combinations: fund `0001`, agency `416`, organization `20`, objects `1180`/`1900`; fund `0001`, agency `478`, organization `80`, object `1180`; and fund `0011`, agency `416`, organization `20`, object `1900`. These are more specific than “drop every 1180.” It separately identifies service costs from fund `0907` for the responsible agencies.
+
+The topic page says a roughly $2 billion FY2021 problem was caught before publication. `past-mistakes.qmd` is less certain and asks for a highlighted worksheet to confirm FY2021/FY2022. Do not list that amount as a verified published-report error. Needed: final editions, final healthcare tables, and the referenced reconciliation worksheet.
+
+## M04 — Healthcare: employee premiums and net cost
+
+**Documented method change; magnitude not verified.** The main calculation's Health Insurance Premiums section says FY2021 subtracted employee premiums from spending to calculate net healthcare cost, and that this was discontinued. Current code recodes selected premiums to revenue type `51` and excludes that type; the employee-premium subtraction in expenditure aggregation is commented out. The topic page says premiums are excluded from revenue and the analysis.
+
+Record separately whether a release excludes premiums from revenue and whether it nets them from expenses. Those are distinct operations. The note that totals were “practically unchanged” needs supporting output; no amount was recalculated in this review.
+
+## M05 — Pensions: inclusion errors versus presentation changes
+
+**Two different issues, not one correction.** `past-mistakes.qmd` reports that some earlier calculations used benefit payments to employees (`4430`) instead of state contributions into pension funds (`4431`). Its historical dollar comparisons require report-run verification.
+
+[Pension-variant source](https://github.com/igpa-uillinois/Fiscal-Futures/blob/main/Everything_changepensions.qmd), opening paragraphs, says the FY2024 report leaves pension costs with service departments and provides a separate pension table that must not be added again. The main working calculation still moves pension records to agency `901`, while its final export comments describe pensions as retained in service categories. Commit `6ed104a` (August 8, 2026) explicitly describes temporarily keeping pension categories for a data request.
+
+A pure reclassification should preserve aggregate spending; replacing benefit payments with contributions can change it. Compare included record sets and total expenditure, not merely category names. Also preserve the special `1298` treatment for selected 2010/2011 pension funds, which happens before the general investment exclusion.
+
+## M06 — CURE: receipt inclusion, spending classification, and scenarios
+
+**Scope ambiguity and documented decisions.** The main calculation's “Dropping State CURE Revenue” heading describes exclusion, but the immediately following active code only flags and summarizes `FEDERAL STIMULUS PACKAGE`; it does not filter those records out. A later table footnote says values include State CURE. A flag or heading does not establish that a particular output excludes pandemic revenue.
+
+The Local Transfers discussion dates an exclusion decision for Local CURE fund `0325` to December 18, 2022 and also quotes an earlier recommendation to include it. The Medicaid discussion retains healthcare-provider-relief expenditure in Medicaid based on its agency/appropriation coding. [Medicaid source](https://github.com/igpa-uillinois/Fiscal-Futures/blob/main/Medicaid.qmd) calls this “revenue” in one note despite discussing expenditure classification.
+
+Distinguish State CURE receipts, Local CURE pass-throughs, provider-relief spending, and any scenario excluding selected stimulus revenue. `FEDERAL STIMULUS PACKAGE` is explicitly not all pandemic assistance. Needed: the release's scenario definition, fund flags, and separate revenue/expenditure reconciliation.
+
+## M07 — Local transfers: removal from records versus restoration to totals
+
+**Working-copy implementation concern, not a verified report finding.** `Everything.qmd` says state-levied taxes shared with local governments remain expenditures, while local-option collections are outside the frame. It extracts groups `971`, `972`, `975`, and `976` into `transfers` and removes those records from `exp_temp`. Later, Pivoting and Merging says to create `exp_970`, but the join and summation are commented out in the reviewed working copy.
+
+Trace the final aggregate to confirm restoration before interpreting totals. This could affect both expenditure and the fiscal gap. It must not be attributed to an earlier report without its source snapshot. The nearby debt aggregation also has a broken-looking pipe sequence; a clean execution is necessary before this working version can serve as numerical evidence.
+
+## M08 — What do `exp_temp` and `rev_temp` contain?
+
+**Confirmed stage-description conflict.** The original [data README](https://github.com/igpa-uillinois/Fiscal-Futures/blob/main/data/README.md) first says dropped observations remain in these files, then says the annual `exp_temp`/`rev_temp` files have already dropped observations outside the fiscal-gap calculation. The root cleaning page writes the annual intermediates; `Everything.qmd` reads them and applies further exclusions and transformations.
+
+Treat a filename alone as insufficient provenance. Record producing script, commit, chunk/stage, receipt vintage, and filters applied. The same warning applies to `allexp_recoded`/`allrev_recoded`: the README itself says these need updating as of March 2026.
+
+## M09 — Published values versus the FY2023 restated series
+
+**Confirmed difference, with the source of each figure now identified.** The FY2020, FY2021, and FY2022 reports preserve the original published results. The FY2023 report's Appendix Item 4 contains a revised historical series. It matches the correction narrative in `past-mistakes.qmd`, rather than the figures originally printed in the earlier reports.
+
+| Fiscal year | As published: expenditures | As published: revenue | As published: fiscal gap | FY2023 Appendix Item 4: expenditures | FY2023 Appendix Item 4: revenue | FY2023 Appendix Item 4: fiscal gap |
+|---|---:|---:|---:|---:|---:|---:|
+| 2020 | 82.7 | 78.3 | -4.4 | 81.61 | 80.59 | -1.02 |
+| 2021 | 92.3 | 91.4 | about -0.9 | 92.89 | 95.21 | 2.32 |
+| 2022 | 101.829 | 113.022 | 11.192 | 100.07 | 116.06 | 15.99 |
+| 2023 | — | — | — | 111.97 | 111.77 | -0.20 |
+
+Values are billions of nominal dollars. Parentheses in the reports denote a negative fiscal gap. The FY2020 report narrates the gap as $4.4 billion and presents rounded total spending/revenue in separate tables. The FY2021 report's detailed appendix shows $92.264 billion of spending and $91.392 billion of revenue, while its opening rounds them to $92.3 billion and $91.4 billion; its approximately $0.9 billion gap is consistent with the report-era “$1 billion deficit” description. The FY2022 supplied file is treated as final for these figures at the maintainer's direction, even though its filename retains a draft/comment marker.
+
+This resolves the earlier internal ambiguity: the $1.0 billion FY2020 deficit, $2.3 billion FY2021 surplus, and $16.0 billion FY2022 surplus are later restatements, not claims about what the earlier reports originally printed. It does **not** yet identify the exact contribution of each methodological or data-vintage change. The FY2022 report also presents a selected scenario: excluding State and Local CURE revenue intended for one-time spending reduces its stated FY2022 surplus from $11.1 billion to $2.7 billion. That scenario must remain separate from both the as-published all-funds result and the FY2023 restatement.
+
+Candidate calculation evidence is retained in the corresponding annual folders: FY2021 contains the Stata workflow; FY2022 contains the R transition and replication outputs; and FY2023 contains the nested `Fiscal-Future-FY2023` Quarto project and `summary_file_FY23_wTotals_April26_2024.xlsx`. These are starting points for a future bridge analysis, not yet a verified one-to-one mapping to report tables.
+
+### Subsequent published anchors and later restatements
+
+The FY2024 annual report reports $114.99 billion of expenditures, $115.14 billion of revenue, and a $144 million surplus. It also explicitly says that its debt-service measure excludes principal repayments. The FY2025 expenditures report subsequently lists FY2024 at $115.00 billion of expenditures, $115.12 billion of revenue, and a $120 million surplus. This small difference is a later restatement and should not overwrite the FY2024 report's as-published values.
+
+The FY2025 revenue report is a separate, pre-lapse-period publication and reports total FY2025 revenue of $118.16 billion. It does not provide a full expenditure total or fiscal gap. The companion FY2025 expenditures report says it uses final tallies for both sides of the budget and reports $119.51 billion of expenditures, $118.16 billion of revenue, and a $1.35 billion deficit. It further states that its FY2025 expenditure total includes estimated remaining spending from State CURE and ESSER funds whose revenue had been recorded in FY2022, and that excluding refund-fund transfers from the fiscal-gap measure affects the interpretation of the reported balance. Preserve the revenue and expenditures publications as distinct editions, even where their revenue totals agree.
+
+## Evidence needed to close the register
+
+The supplied FY2020–FY2023 PDFs now provide published anchors, and the FY2026 outputs are the forthcoming-publication record. Highest-priority remaining materials are the exact supporting summary workbooks/code for each earlier edition and any formal correction notice. For the earliest debt-policy cycle and the noted 2010 restatement, the FY2013 and FY2014 reports and methodology appendices would help. The original RPubs URL and annual GitHub repository list would establish the migration chronology.
+
+PDFs establish what was printed; they usually cannot establish every inclusion predicate. Preserve both the published edition and its calculation evidence. Some earlier PDFs are already linked from the README and can be reviewed in a subsequent numerical reconciliation; they were not all audited here. See the [archive proposal](report-archives.qmd) for the fields to capture.
