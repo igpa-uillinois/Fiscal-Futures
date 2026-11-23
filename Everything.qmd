@@ -15,7 +15,7 @@ library(cmapplot)
 
 theme_set(theme_classic() )
 
-current_year <- 2025
+current_year <- 2026
 past_year <- current_year - 1
 
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
@@ -172,7 +172,7 @@ Code refunds to match the rev_type codes (02=income taxes, 03 = corporate income
 Ideally the money going in and out of the funds used for refunds would be approximately equal. If equal, would drop from Fiscal Futures analysis so that Revenue reflects the amount of money the state gets to keep (and the local portion that becomes the local govt transfer)
 
 ```{r}
-#| label: fig-tax-refunds
+#| label: fig-tax-refunds-old
 #| fig-cap:  Tax Refunds
 
 
@@ -183,51 +183,59 @@ Ideally the money going in and out of the funds used for refunds would be approx
 
 # fund 0278 was set to in_ff == 0 so it would have been ignored from the revenue and expenditure side.
 # 
-# tax_refund_long <- exp_temp %>%           
-#   # fund != "0401" #  Protest Trust Fund
-#   filter(fund != "0401" &       # don't know why this was included? 
-#           (object == "9900" |
-#      object == "9910" | object == "9921" | object == "9923" | object == "9925") ) %>%
-#   # keeps these objects which represent revenue, insurance, treasurer,and financial and professional reg tax refunds
-#   mutate(refund = case_when(
-#     object == "9900" ~ "FY23_Rebates",   # part of COVID Relief
-#     fund == "0278" & sequence == "00" ~ "02", # for income tax refund
-#     fund == "0278" & sequence == "01" ~ "03", # tax administration and enforcement and tax operations become corporate income tax refund
-#     fund == "0278" & sequence == "02" ~ "02",
-#     object=="9921" ~ "21",                # inheritance tax and estate tax refund appropriation
-#     object=="9923" | fund == "0012" ~ "09",                # motor fuel tax refunds
-#     obj_seq_type == "99250055" ~ "06",    # sales tax refund, 
-#     fund=="0378" & object=="9925" ~ "24", # insurance privilege tax refund
-#    (fund=="0001" & object=="9925") | 
-#      (fund == "0384" & object=="9925" & fy == 2023) ~ "35", # all other taxes
-#    # fund=="0001" & object=="9925" ~ "35", # all other taxes
-#       T ~ "CHECK"))                       # if none of the items above apply to the observations, then code them as CHECK 
-# 
+tax_refund_long <- exp_temp %>%
+  # fund != "0401" #  Protest Trust Fund
+  filter(fund != "0401" &       # don't know why this was included?
+          (object == "9900" |
+     object == "9910" | object == "9921" | object == "9923" | object == "9925") ) %>%
+  # keeps these objects which represent revenue, insurance, treasurer,and financial and professional reg tax refunds
+  mutate(refund = case_when(
+    object == "9900" ~ "FY23_Rebates",   # part of COVID Relief
+    fund == "0278" & sequence == "00" ~ "02", # for income tax refund
+    fund == "0278" & sequence == "01" ~ "03", # tax administration and enforcement and tax operations become corporate income tax refund
+    fund == "0278" & sequence == "02" ~ "02",
+    object=="9921" ~ "21",                # inheritance tax and estate tax refund appropriation
+    object=="9923" | fund == "0012" ~ "09",                # motor fuel tax refunds
+    obj_seq_type == "99250055" ~ "06",    # sales tax refund,
+    fund=="0378" & object=="9925" ~ "24", # insurance privilege tax refund
+   (fund=="0001" & object=="9925") |
+     (fund == "0384" & object=="9925" & fy == 2023) ~ "35", # all other taxes
+   # fund=="0001" & object=="9925" ~ "35", # all other taxes
+      T ~ "CHECK"))                       # if none of the items above apply to the observations, then code them as CHECK
+
 #     
 # exp_temp <- left_join(exp_temp, tax_refund_long) %>%
 #   mutate(refund = ifelse(is.na(refund),"not refund", as.character(refund)))
-# 
-# tax_refund <- tax_refund_long %>% 
-#   group_by(refund, fy)%>%
-#   summarize(refund_amount = sum(expenditure, na.rm = TRUE)/1000000) %>%
-#   pivot_wider(names_from = refund, values_from = refund_amount, names_prefix = "ref_") %>%
-#   mutate_all(~replace_na(.,0)) %>%
-#   arrange(fy)
-# 
-# tax_refund %>% 
-#   pivot_longer(c(ref_02:ref_35, ref_FY23_Rebates), names_to = "Refund Type", values_to = "Amount") %>%
-#   ggplot()+
-#   theme_classic()+
-#   geom_line(aes(x=fy,y=Amount, group = `Refund Type`, color = `Refund Type`))+
-#   labs(title = "Refund Types", 
-#        caption = "Refunds are excluded from Expenditure totals and instead subtracted from Revenue totals") + 
-#   labs(title = "Tax refunds", 
-#        caption = "Rev_type codes: 02=income taxes, 03=corporate income taxes, 06=sales tax, 09=motor fuel tax, 
-#        24=insurance taxes and fees, 35 = all other tax refunds." )
+```
+
+
+```{r}
+#| label: fig-tax-refunds
+#| fig-cap:  Tax Refunds
+#| column: margin 
+
+tax_refund <- tax_refund_long %>% 
+  group_by(refund, fy)%>%
+  summarize(refund_amount = sum(expenditure, na.rm = TRUE)/1000000) %>%
+  pivot_wider(names_from = refund, values_from = refund_amount, names_prefix = "ref_") %>%
+  mutate_all(~replace_na(.,0)) %>%
+  arrange(fy)
+
+tax_refund %>%
+  pivot_longer(c(ref_02:ref_35, ref_FY23_Rebates), names_to = "Refund Type", values_to = "Amount") %>%
+  ggplot()+
+  theme_classic()+
+  geom_line(aes(x=fy,y=Amount, group = `Refund Type`, color = `Refund Type`))+
+  labs(title = "Refund Types",
+       caption = "Refunds are excluded from Expenditure totals and instead subtracted from Revenue totals") +
+  labs(title = "Tax refunds",
+       caption = "Rev_type codes: 02=income taxes, 03=corporate income taxes, 06=sales tax, 09=motor fuel tax,
+       24=insurance taxes and fees, 35 = all other tax refunds." )
 
 # remove the items we recoded in tax_refund_long
-# keep only non-refund expenditures with filter()
 # exp_temp <- exp_temp %>% filter(refund == "not refund")
+
+
 ```
 
 For FY23, the one-time abatement, object 9900, is included as an expenditure item within the Department of Revenue.
@@ -548,7 +556,8 @@ debt_keep <- debt_keep %>%
     group = ifelse(fund != "0455" & (object == "8813" | object == "8800"), "903", as.character(group)),
     in_ff = ifelse(group == "903", 1, as.character(in_ff)))
 
-debt_keep_yearly <- debt_keep %>% group_by(fy, group) %>% summarize(debt_cost = sum(expenditure,na.rm=TRUE)/1000000) %>% select(-group)
+debt_keep_yearly <- debt_keep %>% group_by(fy, group) %>% 
+  summarize(debt_cost = sum(expenditure,na.rm=TRUE)/1000000) %>% select(-group)
 
 ```
 
@@ -598,7 +607,6 @@ exp_temp <- exp_temp %>%
       agency=="402" | agency=="418" | agency=="478" | agency=="444" | agency=="482" ~ as.character(agency), # aging, CFS, HFS, human services, public health
       T ~ as.character(group))
     ) %>%      
-
   
   mutate(group = case_when(
     agency=="478" & (appr_org=="01" | appr_org == "65" | appr_org=="88") & (object=="4900" | object=="4400") ~ "945", # separates CHIP from health and human services and saves it as Medicaid
@@ -671,7 +679,7 @@ exp_temp <- exp_temp %>%
 
 exp_temp %>% filter(group_name == "Check name")
 
-#write_csv(exp_temp, "all_expenditures_recoded.csv")
+write_csv(exp_temp, "data/FY2026 Files/all_expenditures_recoded.csv")
 
 ```
 
@@ -1410,7 +1418,7 @@ rev_long %>%
 
 ```{r}
 #| label: fig-bargraphs-largest-expandrev-cats
-#| fig-cap: 
+#| fig-cap: " "
 #| fig-subcap: 
 #| - "Largest Expenditures"
 #| - "Largest Revenue Sources"

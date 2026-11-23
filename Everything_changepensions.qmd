@@ -574,7 +574,7 @@ exp_temp <- exp_temp %>%
            case_when(
              group == "416" ~ "Central Management",
              group == "442" ~ "Human Rights",
-             group == "445"  ~ "Illinois Power Agency",
+             group == "445" ~ "Illinois Power Agency",
              group == "452" ~ "Labor",
              group == "458" ~ "State Lottery",
              group == "489" ~ "SERS",
